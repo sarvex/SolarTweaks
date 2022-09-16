@@ -250,7 +250,7 @@ export default {
   align-items: center;
   border-radius: 5px;
   background: #1d1d1b;
-  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='5' ry='5' stroke='%23333' stroke-width='5' stroke-dasharray='23' stroke-dashoffset='56' stroke-linecap='square'/%3e%3c/svg%3e");
+  border: 0.5px dashed #2f2f2d;
 }
 
 #add-server-btn {
@@ -259,11 +259,11 @@ export default {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 }
 
 #add-server-btn:hover {
-  transform: scale(1.5);
+  transform: scale(1.25);
 }
 
 .add-server-input {
@@ -294,14 +294,15 @@ export default {
 
 .server-container {
   display: flex;
+  flex-direction: row;
   width: 370px;
   height: 150px;
   border-radius: 10px;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .server-container:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .server-icon {
@@ -309,8 +310,7 @@ export default {
   width: 85px;
   height: 85px;
   object-fit: contain;
-  margin-top: 30px;
-  margin-left: 10px;
+  margin: 30px 0 0 10px;
 }
 
 .server-details-container {
@@ -322,15 +322,19 @@ export default {
 }
 
 .server-detail-name {
-  font-weight: bold;
+  font-weight: 500;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
   font-size: 18px;
   letter-spacing: 1.5px;
   margin-bottom: 5px;
 }
 
 .server-detail {
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
   font-size: 14px;
-  letter-spacing: 1.5px;
+  font-weight: 300;
+  color: #e6e6e6;
+  letter-spacing: 1px;
 }
 
 .server-play-container {
@@ -342,10 +346,11 @@ export default {
 }
 
 .server-play-btn {
-  height: 80px;
+  height: 100px;
   width: 80px;
   border: none;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
   cursor: pointer;
 }
 

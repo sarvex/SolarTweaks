@@ -148,14 +148,14 @@ export default {
 
 <style scoped>
 ::-webkit-scrollbar {
-    width: 5px;
-    display: flex;
+  width: 5px;
+  display: flex;
 }
 
 ::-webkit-scrollbar-thumb {
-    height: 50px;
-    border-radius: 90px;
-    background-color: #424140;
+  height: 50px;
+  border-radius: 90px;
+  background-color: #424140;
 }
 
 #play-container {
@@ -172,22 +172,21 @@ export default {
 
 #buttons {
   box-shadow: 0 0 25px -5px #28af55;
-  transition: box-shadow 0.5s ease, transform 0.5s ease;
+  transition: box-shadow 0.5s ease, transform 0.5s ease-in-out;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 10px;
   backface-visibility: hidden;
-  font-smoothing: subpixel-antialiased;
   -webkit-font-smoothing: subpixel-antialiased;
-  -webkit-transform: scale(1);
-  transform: scale(1)
+  -webkit-transform: scale3d(1, 1, 1);
+  transform: scale3d(1, 1, 1);
 }
 
 #buttons:hover {
   box-shadow: 0 0 40px -5px #28af55;
-    -webkit-transform: scale(1.05);
-  transform: scale(1.05)
+  -webkit-transform: scale3d(1.15, 1.15, 1.05);
+  transform: scale3d(1.05, 1.05, 1.05);
 }
 
 #play-button {
@@ -198,12 +197,14 @@ export default {
   height: 70px;
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.5s ease;
   cursor: pointer;
+  text-shadow: 0 0.1rem 0 rgba(0, 0, 0, 0.3);
 }
 
 #play-button:hover {
   background-color: #2cbe5dd1;
+  text-shadow: 0 0.1rem 0 rgba(0, 0, 0, 0.3);
 }
 
 #buttons.disabled {
@@ -215,7 +216,7 @@ export default {
 }
 
 #play-button:disabled {
-  background-color: rgba(128,0,128,.85);
+  background-color: rgba(128, 0, 128, 0.85);
   box-shadow: 0 0 40px -5px #800080;
   cursor: default;
   width: 355px;
@@ -247,7 +248,6 @@ export default {
   font-weight: 700;
   letter-spacing: 2.5px;
   line-height: 1.2;
-  text-shadow: 0px 1.4px 1px rgba(0, 0, 0, 0.775);
 }
 
 .play-btn-icon {
@@ -259,7 +259,6 @@ export default {
   font-weight: 400;
   letter-spacing: 3px;
   line-height: 1.2;
-  text-shadow: 0px 1.4px 1px rgba(0, 0, 0, 0.775);
 }
 
 #select-version-container {
@@ -319,7 +318,7 @@ export default {
   text-shadow: 0 2px 0 rgb(0, 0, 0, 0.2);
   transition: 0.4s ease;
   filter: saturate(0);
-    font-smoothing: subpixel-antialiased;
+  font-smoothing: subpixel-antialiased;
   -webkit-font-smoothing: subpixel-antialiased;
 }
 

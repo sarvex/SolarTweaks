@@ -132,13 +132,12 @@ export default {
 #title-bar-container {
   height: 110px;
   background-color: #0a0a0a;
+  width: 100%;
   -webkit-app-region: drag;
   display: flex;
-}
-
-#title-bar-container > * {
-  margin-top: auto;
-  margin-bottom: auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 #title-image {
@@ -167,7 +166,7 @@ export default {
 
 .nav-item {
   display: inline;
-  margin-right: 15px;
+  margin: 0 5px;
 }
 
 .nav-btn {
@@ -176,9 +175,8 @@ export default {
   width: 100px;
   height: 40px;
   border: none;
-  border-radius: 2px;
   box-shadow: 0 0 0 2px transparent;
-  transition: background-color 0.3s ease-out, box-shadow 0.3s ease-out;
+  transition: background-color 0.05s ease-out, box-shadow 0.05s ease-out;
   font-size: 16px;
   letter-spacing: 0px;
   font-weight: normal;
@@ -190,7 +188,7 @@ export default {
 }
 
 .nav-btn:disabled {
-  box-shadow: 0 0 0 2px #2b2b2b;
+  box-shadow: 0 0 0 1px #2b2b2b;
   background-color: #1f1f1f;
   cursor: default;
 }

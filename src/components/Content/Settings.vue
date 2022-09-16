@@ -1,7 +1,7 @@
 <template>
   <div id="settings-container">
     <Card
-      icon="fa-solid fa-gears"
+      icon="fa-solid fa-cogs"
       title="GAME & LAUNCHER SETTINGS"
       subtitle="CUSTOMIZE LAUNCHER BEHAVIOR"
       background="settings-1"
@@ -121,14 +121,20 @@
         >
           <div id="settings-before-launch-container">
             <div class="settings-before-launch">
-              <input type="checkbox" id="settings-skip-checks-input" v-model="skipChecks" @change="updateSkipChecks()">
+              <input
+                type="checkbox"
+                id="settings-skip-checks-input"
+                v-model="skipChecks"
+                @change="updateSkipChecks()"
+              />
               <span id="settings-debug-mode-text"
                 >Skip checks (game files, JRE, licenses, natives and assets)
                 <span class="settings-debug-mode-warning"
                   ><i
                     class="settings-debug-mode-warning fa-solid fa-triangle-exclamation"
-                  ></i
-                  > Warning: Not recommended for Normal Users unless told by a Developer!</span
+                  ></i>
+                  Warning: Not recommended for Normal Users unless told by a
+                  Developer!</span
                 ></span
               >
             </div>
@@ -601,7 +607,7 @@ export default {
   width: 60px;
   background: #171717;
   -webkit-appearance: none;
-	background-color: #343434;
+  background-color: #343434;
   border-radius: 20px;
   cursor: pointer;
   border-radius: 5px;
@@ -614,7 +620,7 @@ export default {
 }
 
 #settings-skip-checks-input:checked {
-  background: #2b71ce;
+  background-color: #2b71ce;
   color: #fff;
 }
 
@@ -689,7 +695,8 @@ export default {
 }
 
 .settings-card-item {
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: 0.2px;
   margin: 10px;
   flex: 1 1 0px;
 }
@@ -761,6 +768,7 @@ export default {
 
 .settings-resolution-title {
   display: flex;
+  font-weight: 400;
 }
 
 .settings-resolution-icon {
@@ -853,8 +861,8 @@ export default {
   position: absolute;
   width: 490px;
   height: 190px;
-  margin-left: 377px;
-  margin-top: 16px;
+  margin-left: 380px;
+  padding: 8px;
   background-color: #1d1d1b;
   border: #343434 1px solid;
   border-radius: 5px;
@@ -880,7 +888,7 @@ export default {
 }
 
 #args-presets-subtitle {
-  font-weight: 400;
+  font-weight: 300;
   font-size: 12px;
   margin-left: 15px;
   margin-top: 6px;
@@ -905,6 +913,7 @@ export default {
   margin-top: 2px;
   margin-left: 15px;
   transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .args-presets-preset-button:hover {
@@ -913,15 +922,16 @@ export default {
 
 #settings-args-input {
   resize: none;
+  font-weight: 400;
   border: none;
   outline: none;
   background-color: #171717;
   font-style: italic;
-  margin: 15px;
+  margin: 5px;
   margin-bottom: 0px;
   width: 95%;
   height: 75%;
-  padding: 5px;
+  padding: 10px;
   border-radius: 5px;
 }
 
@@ -952,7 +962,7 @@ export default {
   width: 20px;
   background: #171717;
   -webkit-appearance: none;
-	background-color: #343434;
+  background-color: #343434;
   border-radius: 20px;
   cursor: pointer;
   border-radius: 5px;

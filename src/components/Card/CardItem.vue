@@ -45,16 +45,20 @@ export default {
 .card-item-icon {
   font-size: 20px;
   margin-right: 10px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
 }
 
 .card-item-title {
-  font-weight: 200;
+  font-weight: 400;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
   font-size: 20px;
 }
 
 .card-item-subtitle {
-  font-weight: 200;
+  font-weight: 300;
   font-size: 12px;
+  color: #b5b5b5;
+  letter-spacing: 0.25px;
   margin-top: 5px;
 }
 </style>
