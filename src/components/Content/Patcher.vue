@@ -618,7 +618,7 @@ export default {
 }
 
 .customization-toggle-btn-enabled:hover {
-  background-color: #29d67a;
+  background-color: #28c873;
 }
 
 .customization-options-btn {

@@ -1,15 +1,17 @@
 <template>
   <div id="fixed-container">
     <div id="title-bar-container">
-      <img
-        src="@/assets/logo-gray.svg"
-        id="title-image"
-        alt="Solar Tweaks Logo"
-        class="logo-white"
-        height="50"
-        width="50"
-      />
-      <h2 id="title">Solar Tweaks</h2>
+      <div id="title-bar-label">
+        <img
+          src="@/assets/logo-gray.svg"
+          id="title-image"
+          alt="Solar Tweaks Logo"
+          class="logo-white"
+          height="50"
+          width="50"
+        />
+        <h2 id="title">Solar Tweaks</h2>
+      </div>
       <div id="nav-container">
         <ul id="nav">
           <li v-for="link in links" v-bind:key="link.name" class="nav-item">
@@ -137,7 +139,13 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  gap: 110px;
+}
+
+#title-bar-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #title-image {
@@ -150,14 +158,9 @@ export default {
   color: #fff;
   font-family: 'Roboto', sans-serif;
   letter-spacing: 1px;
-  font-size: 2rem;
+  font-size: 1.85rem;
   font-weight: 500;
   line-height: 1.2;
-}
-
-#nav-container {
-  margin-right: auto;
-  margin-left: auto;
 }
 
 #nav {

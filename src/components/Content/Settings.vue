@@ -605,22 +605,28 @@ export default {
 #settings-skip-checks-input {
   height: 20px;
   width: 60px;
-  background: #171717;
   -webkit-appearance: none;
   background-color: #343434;
+  background-image: url('../../assets/icons/checkmark.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: darken;
   border-radius: 20px;
   cursor: pointer;
   border-radius: 5px;
-  transition: 0.3s ease;
+  transition: 0.2s ease;
 }
 
 #settings-skip-checks-input:hover {
-  background: #303030;
+  background-color: #303030;
   color: #fff;
 }
 
 #settings-skip-checks-input:checked {
   background-color: #2b71ce;
+  background-image: url('../../assets/icons/checkmark.svg');
+  background-size: 70%;
+  background-blend-mode: normal;
   color: #fff;
 }
 
@@ -960,9 +966,13 @@ export default {
   margin-top: 7px;
   height: 20px;
   width: 20px;
-  background: #171717;
   -webkit-appearance: none;
   background-color: #343434;
+  background-image: url('../../assets/icons/checkmark.svg');
+  background-size: 70%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: darken;
   border-radius: 20px;
   cursor: pointer;
   border-radius: 5px;
@@ -970,12 +980,19 @@ export default {
 }
 
 #settings-debug-mode-input:hover {
-  background: #303030;
+  background-color: #303030;
   color: #fff;
 }
 
 #settings-debug-mode-input:checked {
   background: #2b71ce;
+  background-color: #2b71ce;
+  background-image: url('../../assets/icons/checkmark.svg');
+  background-size: 70%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal;
+  color: #fff;
   color: #fff;
 }
 
