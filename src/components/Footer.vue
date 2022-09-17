@@ -73,16 +73,14 @@ export default {
   height: 50px;
   width: 100%;
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   z-index: 10;
 }
 
 #solar-tweaks-container {
   display: flex;
-}
-
-#footer-container > * {
-  margin-top: auto;
-  margin-bottom: auto;
 }
 
 #footer-image {
@@ -94,6 +92,9 @@ export default {
 
 .footer-text {
   color: #3b3b3b;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
   font-size: 17px;
 }
 
@@ -103,17 +104,13 @@ export default {
   margin-bottom: auto;
 }
 
-#links-container {
-  margin: auto;
-}
-
 #links {
   list-style-type: none;
 }
 
 .link {
   display: inline;
-  margin-right: 25px;
+  margin: 0 10px;
   color: #3b3b3b;
   font-size: 20px;
   cursor: pointer;

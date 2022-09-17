@@ -58,17 +58,22 @@ export default {
 .card-icon {
   font-size: 25px;
   margin-right: 10px;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.2);
 }
 
 .card-title {
-  font-weight: 200;
+  font-weight: 500;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.2);
   font-size: 25px;
+  letter-spacing: 1px;
 }
 
 .card-subtitle {
-  font-weight: 100;
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #d4d4d4;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.5);
   margin-top: 2px;
 }
 

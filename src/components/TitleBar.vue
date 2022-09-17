@@ -1,15 +1,17 @@
 <template>
   <div id="fixed-container">
     <div id="title-bar-container">
-      <img
-        src="@/assets/logo-gray.svg"
-        id="title-image"
-        alt="Solar Tweaks Logo"
-        class="logo-white"
-        height="50"
-        width="50"
-      />
-      <h2 id="title">Solar Tweaks</h2>
+      <div id="title-bar-label">
+        <img
+          src="@/assets/logo-gray.svg"
+          id="title-image"
+          alt="Solar Tweaks Logo"
+          class="logo-white"
+          height="50"
+          width="50"
+        />
+        <h2 id="title">Solar Tweaks</h2>
+      </div>
       <div id="nav-container">
         <ul id="nav">
           <li v-for="link in links" v-bind:key="link.name" class="nav-item">
@@ -132,13 +134,18 @@ export default {
 #title-bar-container {
   height: 110px;
   background-color: #0a0a0a;
+  width: 100%;
   -webkit-app-region: drag;
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 110px;
 }
 
-#title-bar-container > * {
-  margin-top: auto;
-  margin-bottom: auto;
+#title-bar-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #title-image {
@@ -151,14 +158,9 @@ export default {
   color: #fff;
   font-family: 'Roboto', sans-serif;
   letter-spacing: 1px;
-  font-size: 2rem;
+  font-size: 1.85rem;
   font-weight: 500;
   line-height: 1.2;
-}
-
-#nav-container {
-  margin-right: auto;
-  margin-left: auto;
 }
 
 #nav {
@@ -167,7 +169,7 @@ export default {
 
 .nav-item {
   display: inline;
-  margin-right: 15px;
+  margin: 0 5px;
 }
 
 .nav-btn {
@@ -176,9 +178,8 @@ export default {
   width: 100px;
   height: 40px;
   border: none;
-  border-radius: 2px;
   box-shadow: 0 0 0 2px transparent;
-  transition: background-color 0.3s ease-out, box-shadow 0.3s ease-out;
+  transition: background-color 0.05s ease-out, box-shadow 0.05s ease-out;
   font-size: 16px;
   letter-spacing: 0px;
   font-weight: normal;
@@ -190,7 +191,7 @@ export default {
 }
 
 .nav-btn:disabled {
-  box-shadow: 0 0 0 2px #2b2b2b;
+  box-shadow: 0 0 0 1px #2b2b2b;
   background-color: #1f1f1f;
   cursor: default;
 }

@@ -132,7 +132,8 @@ export default {
   text-align: center;
   font-size: smaller;
   font-weight: 300;
-  letter-spacing: 0.55px;
+  letter-spacing: 0.25px;
+  color: #cfcfcf;
   line-height: 1.5;
 }
 

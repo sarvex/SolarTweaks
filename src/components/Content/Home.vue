@@ -1,6 +1,6 @@
 <template>
   <div id="home-container">
-    <h4 id="posts-title">Recent news</h4>
+    <h4 id="posts-title">Recent News</h4>
     <div id="posts-container">
       <div v-for="post in posts" v-bind:key="post.url" class="post-container">
         <div class="post-image-container">
@@ -17,7 +17,10 @@
         <div id="post-bottom-container">
           <div class="post-author-container">
             <p class="post-author">
-              <normal style="opacity: 0.7; font-weight: 100; letter-spacing: 0.2px;">Posted by </normal>
+              <normal
+                style="opacity: 0.7; font-weight: 200; letter-spacing: 0.2px"
+                >Posted by
+              </normal>
               <img
                 :src="post.avatarUrl"
                 class="post-author-avatar"
@@ -160,7 +163,7 @@ export default {
 
 .post-description {
   font-size: small;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: 0.2px;
   line-height: 1.5;
   margin-left: 5px;
@@ -176,12 +179,9 @@ export default {
 
 #post-bottom-container {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-top: 5px;
-}
-
-.post-author-container {
-  display: flex;
+  margin-top: 2px;
 }
 
 .post-author-container {
@@ -193,19 +193,20 @@ export default {
 .post-author-avatar {
   width: 16px;
   height: 16px;
-  margin-right: 4px;
-  margin-left: 3px;
+  margin: 0 2px;
   vertical-align: text-bottom;
 }
 
 .post-author {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .post-button {
   background-color: #2b71ce;
   border: none;
   width: 100px;
+  font-weight: 400;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
   height: 25px;
   border-radius: 2px;
   margin-top: 12px;

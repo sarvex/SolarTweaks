@@ -14,7 +14,7 @@
       <h1 id="options-title">{{ customizing.customization.name }}</h1>
     </div>
     <div id="options-content">
-      <h3 id="options-label">Enter custom values:</h3>
+      <h3 id="options-label">Inside the black inputs you must add custom values.</h3>
       <div
         v-for="(value, name) in customizing.customization.values"
         v-bind:key="name"
@@ -455,7 +455,7 @@ export default {
 <style scoped>
 #options-background-filter {
   position: fixed;
-  background-color: #00000070;
+  background-color: #000000ae;
   height: 80%;
   width: 100%;
   top: 110px;
@@ -465,15 +465,15 @@ export default {
 #options-container {
   position: fixed;
   background-color: #232324;
-  border: 3px solid #30323456;
+  border: 1px solid #75797e56;
   height: fit-content;
-  padding: 25px;
+  padding: 20px;
   z-index: 100;
   width: 60%;
   left: calc((50vw - 50%) * -1);
   top: calc((50vh - 50%) * -1);
   transform: translate(calc(50vw - 50%), calc(50vh - 50%));
-  border-radius: 15px;
+  border-radius: 5px;
 }
 
 #options-title-container {
@@ -491,6 +491,7 @@ export default {
 #options-title {
   letter-spacing: 2px;
   font-weight: 600;
+  text-transform: uppercase;
   margin-top: 8px;
 }
 
@@ -502,35 +503,37 @@ export default {
 }
 
 #options-label {
-  font-weight: 500;
-  font-size: 25px;
+  font-weight: 200;
+  font-size: 16px;
   letter-spacing: 0.5px;
   margin-bottom: 20px;
 }
 
 .options-value-container {
   display: flex;
+  align-items: center;
 }
 
 .options-value-title {
   text-align: center;
-  font-weight: 500;
-  font-size: 24px;
-  margin-top: 35px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  font-size: 18px;
   margin-right: 15px;
 }
 
 .options-input {
   border: none;
-  background-color: #202020;
+  background-color: #1c1c1c;
+  border: 0.5px solid #4141416d;
   outline: none;
-  height: 50px;
+  height: 30px;
   width: 450px;
-  margin-top: 15px;
-  font-size: 25px;
+  margin: 10px 0;
+  font-size: 20px;
   padding: 15px;
   text-align: center;
-  border-radius: 15px;
+  border-radius: 5px;
 }
 
 #customize-container {
@@ -579,7 +582,7 @@ export default {
 .customization-name {
   color: #a4a9ad70;
   text-align: center;
-  font-weight: 350;
+  font-weight: 400;
   margin-top: 25px;
   color: #f7f7f783;
   font-size: 20px;
@@ -615,7 +618,7 @@ export default {
 }
 
 .customization-toggle-btn-enabled:hover {
-  background-color: #29d67a;
+  background-color: #28c873;
 }
 
 .customization-options-btn {
@@ -625,7 +628,7 @@ export default {
   border: 2px solid #5858587a;
   margin-top: 16px;
   font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 5px;
   font-size: 15px;
   transition: background-color 0.3s, border 0.3s;
   cursor: pointer;
