@@ -46,7 +46,7 @@ export default {
   justify-content: center;
   align-items: center;
   vertical-align: middle;
-  padding-top: 22px;
+  padding-top: 25px;
 }
 
 .card-title-container {

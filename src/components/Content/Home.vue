@@ -216,7 +216,7 @@ export default {
 }
 
 .post-button:hover {
-  background-color: #1c5cb6;
+  background-color: #2b71ce;
 }
 
 .post-btn-text {

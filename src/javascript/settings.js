@@ -32,9 +32,26 @@ export default async function setupSettings() {
     await settings.set('launchDirectories', defaultSettings.launchDirectories);
   } else {
     const directories = await settings.get('launchDirectories');
-    const old = directories.find((d) => d.version === '1.8');
-    if (old) old.version = '1.8.9';
+    let launchDirectory = directories.find((d) => d.version === '1.8');
+    if (launchDirectory) launchDirectory.version = '1.8.9';
+    launchDirectory = directories.find((d) => d.version === '1.18');
+    if (launchDirectory) launchDirectory.version = '1.18.2';
+    launchDirectory = directories.find((d) => d.version === '1.17');
+    if (launchDirectory) launchDirectory.version = '1.17.1';
+    launchDirectory = directories.find((d) => d.version === '1.16');
+    if (launchDirectory) launchDirectory.version = '1.16.5';
+    launchDirectory = directories.find((d) => d.version === '1.12');
+    if (launchDirectory) launchDirectory.version = '1.12.2';
+    launchDirectory = directories.find((d) => d.version === '1.7');
+    if (launchDirectory) launchDirectory.version = '1.17.10';
     await settings.set('launchDirectories', directories);
+    if (!directories.find((d) => d.version === '1.19.2')) {
+      directories.push({
+        version: '1.19.2',
+        directory: join(process.env.APPDATA, '.minecraft'),
+      });
+      await settings.set('launchDirectories', directories);
+    }
   }
 
   // User's selected ram
@@ -115,6 +132,7 @@ export const defaultSettings = {
     { version: '1.16.5', path: getDotMinecraftDirectory() },
     { version: '1.17.1', path: getDotMinecraftDirectory() },
     { version: '1.18.2', path: getDotMinecraftDirectory() },
+    { version: '1.19.2', path: getDotMinecraftDirectory() },
   ],
   ram: 4000,
   resolution: {

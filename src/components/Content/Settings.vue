@@ -623,7 +623,7 @@ export default {
 }
 
 #settings-skip-checks-input:checked {
-  background-color: #2b71ce;
+  background-color: #269e4e;
   background-image: url('../../assets/icons/checkmark.svg');
   background-size: 70%;
   background-blend-mode: normal;
@@ -642,7 +642,7 @@ export default {
 }
 
 .button {
-  background-color: #2b71ce;
+  background-color: #269e4e;
   border: none;
   height: 30px;
   border-radius: 5px;
@@ -651,7 +651,7 @@ export default {
 }
 
 .button:hover {
-  background-color: #2560ac;
+  background-color: #196d35;
 }
 
 .button-icon {
@@ -848,11 +848,11 @@ export default {
 }
 
 .settings-after-launch-action-active {
-  background-color: #2b71ce;
+  background-color: #269e4e;
 }
 
 .settings-after-launch-action-active:hover {
-  background-color: #2560ac;
+  background-color: #196d35;
 }
 
 #settings-args {
@@ -985,8 +985,8 @@ export default {
 }
 
 #settings-debug-mode-input:checked {
-  background: #2b71ce;
-  background-color: #2b71ce;
+  background: #269e4e;
+  background-color: #269e4e;
   background-image: url('../../assets/icons/checkmark.svg');
   background-size: 70%;
   background-position: center;
@@ -1021,7 +1021,7 @@ export default {
 .jre-item-button {
   margin-left: 5px;
   border: none;
-  background-color: #2b71ce;
+  background-color: #269e4e;
   padding: 5px 10px;
   border-radius: 5px;
   transition: background-color 0.2s ease;
@@ -1037,7 +1037,7 @@ export default {
 }
 
 .jre-item-button:hover {
-  background-color: #2560ac;
+  background-color: #196d35;
 }
 
 .jre-item-button:disabled {

@@ -569,7 +569,7 @@ export async function getJavaArguments(
     '--accessToken',
     '0',
     '--assetIndex',
-    version === '1.7' ? '1.7.10' : version === '1.8.9' ? '1.8' : version,
+    version === '1.7' ? '1.7.10' : version === '1.8.9' ? '1.8' : version === '1.18.2' ? '1.18' : version === '1.17.1' ? '1.17' : version === '1.16.5' ? '1.16' : version === '1.12.2' ? '1.12' : version === '1.19.2' ? '1.19' : version,
     '--userProperties',
     '{}',
     '--gameDir',

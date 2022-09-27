@@ -79,6 +79,11 @@ export default {
           'https://launcherimages.lunarclientcdn.com/versions/background/1_8.6a3c456844.webp',
       },
       {
+        version: '1.19.2',
+        background:
+          'https://launcherimages.lunarclientcdn.com/versions/background/1_19.acf6666238.webp',
+      },
+      {
         version: '1.18.2',
         background:
           'https://launcherimages.lunarclientcdn.com/versions/background/1_18.239841c879.webp',

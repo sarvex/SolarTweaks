@@ -16,6 +16,7 @@
             <option selected value="1.16.5">1.16.5</option>
             <option selected value="1.17.1">1.17.1</option>
             <option selected value="1.18.2">1.18.2</option>
+            <option selected value="1.19.2">1.19.2</option>
           </select>
         </div>
         <div id="shortcut-content-server">

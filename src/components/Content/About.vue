@@ -156,7 +156,7 @@ export default {
 }
 
 .button {
-  background-color: #2b71ce;
+  background-color: #269e4e;
   border: none;
   padding: 10px 25px;
   border-radius: 5px;
@@ -167,7 +167,7 @@ export default {
 }
 
 .button:hover {
-  background-color: #2560ac;
+  background-color: #196d35;
 }
 
 #launcher-version {
