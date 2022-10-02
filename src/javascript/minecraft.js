@@ -133,7 +133,7 @@ export async function checkJRE() {
  * @param {boolean} [skipLaunchingState=false] Skip or not the launching state
  * @returns {Promise<Object>}
  */
-export async function fetchMetadata(skipLaunchingState = false) {
+ export async function fetchMetadata(skipLaunchingState = false) {
   if (!skipLaunchingState) {
     // Launch state
     store.commit('setLaunchingState', {
@@ -147,23 +147,38 @@ export async function fetchMetadata(skipLaunchingState = false) {
   logger.info('Fetching metadata...');
   const machineId = await _machineId();
   const version = await settings.get('version');
+  const hwid_private = await readFile(
+    join(
+      constants.DOTLUNARCLIENT,
+      'launcher-cache',
+      'hwid-private-do-not-share'
+    )
+  );
+  const installation_id = await readFile(
+    join(constants.DOTLUNARCLIENT, 'launcher-cache', 'installation-id')
+  );
+  // Module can be either "lunar" or "neu" for 1.8
+  const moduleID = 'lunar';
   return new Promise((resolve, reject) => {
     axios
       .post(
         constants.links.LC_METADATA_ENDPOINT,
         {
           hwid: machineId,
+          installation_id,
+          hwid_private,
           os: process.platform,
+          os_release: require('os').release(),
           arch: arch(),
           version: version,
           branch: 'master',
           launch_type: 'OFFLINE',
-          classifier: 'optifine',
+          module: moduleID,
         },
         { 'Content-Type': 'application/json', 'User-Agent': 'SolarTweaks' }
       )
       .then((response) => {
-        logger.debug('Fetched metadata');
+        logger.debug('Fetched metadata', response.data);
         resolve(response.data);
       })
       .catch((error) => {
