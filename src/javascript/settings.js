@@ -43,7 +43,7 @@ export default async function setupSettings() {
     launchDirectory = directories.find((d) => d.version === '1.12');
     if (launchDirectory) launchDirectory.version = '1.12.2';
     launchDirectory = directories.find((d) => d.version === '1.7');
-    if (launchDirectory) launchDirectory.version = '1.17.10';
+    if (launchDirectory) launchDirectory.version = '1.7.10';
     await settings.set('launchDirectories', directories);
     if (!directories.find((d) => d.version === '1.19.2')) {
       directories.push({
