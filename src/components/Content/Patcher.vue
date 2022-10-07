@@ -533,7 +533,7 @@ export default {
   font-size: 20px;
   padding: 15px;
   text-align: center;
-  border-radius: 5px;
+  border-radius: 15px;
 }
 
 #customize-container {
