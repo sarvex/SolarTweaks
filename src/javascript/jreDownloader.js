@@ -1,7 +1,8 @@
+import { exec } from 'child_process';
 import extract from 'extract-zip';
 import { move } from 'fs-extra';
 import fs from 'fs/promises';
-import { arch } from 'os';
+import { arch, platform } from 'os';
 import { join } from 'path';
 import constants from '../constants';
 import { downloadAndSaveFile } from './downloader';
@@ -15,12 +16,24 @@ const logger = new Logger('jreDownloader');
  */
 export async function downloadJre(_jre) {
   let jre;
-  arch() === 'x64' ? (jre = _jre['64']) : (jre = _jre['32']);
+  if (platform() === 'win32') {
+    arch() === 'x64' ? (jre = _jre['WindowsX64']) : (jre = _jre['WindowsX32']);
+  } else if (platform() === 'darwin') {
+    arch() === 'arm64' ? (jre = _jre['MacArm']) : (jre = _jre['MacX64']);
+  } else {
+    logger.warn(
+      'Attempted to download a JRE on a non Windows or MacOS Operating System'
+    );
+    return false;
+  }
+
+  if (!jre) {
+    logger.error(`Failed to get JRE from JREs List for ${_jre.name}`);
+    return false;
+  }
 
   const jresPath = join(constants.SOLARTWEAKS_DIR, 'jres');
   const jrePath = join(jresPath, _jre.name);
-
-  console.log();
 
   await fs.mkdir(jresPath).catch(() => {
     // Folder already exists, do nothing
@@ -28,7 +41,7 @@ export async function downloadJre(_jre) {
 
   await downloadAndSaveFile(
     jre.url,
-    `${jrePath}.zip`,
+    `${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`,
     'blob',
     jre.checksum,
     'sha256',
@@ -36,13 +49,52 @@ export async function downloadJre(_jre) {
     true
   );
 
-  await extract(`${jrePath}.zip`, { dir: jrePath + '_temp' }).catch(() => {
-    logger.error(`Failed to extract ${jrePath}.zip`);
-  });
+  if (jre.tar) {
+    await new Promise((res) =>
+      fs
+        .mkdir(jrePath + '_temp')
+        .then(res)
+        .catch(() => {
+          logger.warn('JRE Temp Path already exists, deleting...');
+          fs.rmdir(jrePath + '_temp').then(res);
+        })
+    );
+    if (
+      !(await new Promise((res) =>
+        exec(
+          `cd ${jresPath}; tar -xzvf ${_jre.name}.tar.gz -C ${
+            jrePath + '_temp'
+          }`,
+          async (err) => {
+            if (err) {
+              logger.error(`Failed to extract ${jrePath}.tar.gz`, err);
+              await fs.rm(`${jrePath}.tar.gz`);
+              return res(false);
+            }
+            res(true);
+          }
+        )
+      ))
+    )
+      return false;
+  } else {
+    if (
+      !(await new Promise((res) =>
+        extract(`${jrePath}.zip`, { dir: jrePath + '_temp' })
+          .then(() => res(true))
+          .catch(async (err) => {
+            logger.error(`Failed to extract ${jrePath}.zip`, err);
+            await fs.rm(`${jrePath}.zip`);
+            res(false);
+          })
+      ))
+    )
+      return false;
+  }
 
   await move(join(jrePath + '_temp', jre.folder), jrePath, { overwrite: true });
   await fs.rmdir(jrePath + '_temp');
-  await fs.rm(`${jrePath}.zip`);
+  await fs.rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
 
   return true;
 }

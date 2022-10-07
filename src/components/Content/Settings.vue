@@ -253,7 +253,7 @@
       <CardItem
         icon="fa-solid fa-file-zipper"
         title="JRE Downloader"
-        subtitle="⚠️ This feature is only available on Windows"
+        subtitle="⚠️ This feature is only available on Windows and Mac"
         class="settings-card-item"
       >
         <div id="settings-jre-downloader">
@@ -325,6 +325,7 @@ import {
 } from '../../javascript/jreDownloader';
 import Logger from '../../javascript/logger';
 import constants from '../../constants';
+import { access } from 'fs';
 const logger = new Logger('settings');
 
 export default {
@@ -375,38 +376,93 @@ export default {
     jrePath: '',
     debugMode: false,
     skipChecks: false,
-    // Enabled by default because a lot of people are on Windows
+    // Enabled by default because a lot of people are on Windows and Mac
     jreDownloaderEnabled: true,
     availableJres: {
       Temurin: {
-        32: {
+        WindowsX32: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.1_12.zip',
           checksum:
             'f4bb1323cb34cdb42b92d825fe36fddd78b274f071b8971c5207a66a0e82748a',
           folder: 'jdk-17.0.1+12-jre',
         },
-        64: {
+        WindowsX64: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.2_8.zip',
           checksum:
             'c3204a19aede95ed02ad0f427210855a951d845ab7f806fb56b774daf2572454',
           folder: 'jdk-17.0.2+8-jre',
         },
+        MacArm: {
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.4.1_1.tar.gz',
+          checksum:
+            '63a32fe611f2666856e84b79305eb80609de229bbce4f13991b961797aa88bf8',
+          folder: 'jdk-17.0.4.1+1-jre',
+          tar: true,
+        },
+        MacX64: {
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_x64_mac_hotspot_17.0.4.1_1.tar.gz',
+          checksum:
+            '9c59e45a9a6cbc1b8d671c4a88bb8d9b8929fae067df0d0a73b1ca71781a0996',
+          folder: 'jdk-17.0.4.1+1-jre',
+          tar: true,
+        },
         name: 'Temurin',
       },
       Zulu: {
-        32: {
+        WindowsX32: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_i686.zip',
           checksum:
             'cb86ffb1232dfa77d6a538b4438877721180388716b7cf7403afd04dd9934ce1',
           folder: 'zulu17.32.13-ca-jre17.0.2-win_i686',
         },
-        64: {
+        WindowsX64: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_x64.zip',
           checksum:
             'a8f31891c563890c65ac20ff52906f16891a62d7bb497e389964153205cfd588',
           folder: 'zulu17.32.13-ca-jre17.0.2-win_x64',
         },
+        MacArm: {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-macosx_aarch64.zip',
+          checksum:
+            'a3fd5a58756ccb3e11af1c9cbc289178070d7166dec0aa1a8d046aa6514ecb20',
+          folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_aarch64',
+        },
+        MacX64: {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-macosx_x64.zip',
+          checksum:
+            'a893ad72164ff59c69379a4539297b1db4ad7e0a5e6116f1c1fbdf049dee696e',
+          folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_x64',
+        },
         name: 'Zulu',
+      },
+      GraalVM: {
+        WindowsX32: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
+          checksum:
+            '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
+          folder: 'graalvm-ce-java17-22.1.0',
+        },
+        WindowsX64: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
+          checksum:
+            '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
+          folder: 'graalvm-ce-java17-22.1.0',
+        },
+        MacArm: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-darwin-aarch64-22.1.0.tar.gz',
+          checksum:
+            '06075cd390bd261721392cd6fd967b1d28c0500d1b5625272ea906038e5cd533',
+          folder: 'graalvm-ce-java17-22.1.0',
+          tar: true,
+        },
+        MacX64: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-darwin-amd64-22.1.0.tar.gz',
+          checksum:
+            'b9327fa73531a822d9a27d25980396353869eefbd73fdcef89b4fceb9f529c75',
+          folder: 'graalvm-ce-java17-22.1.0',
+          tar: true,
+        },
+        name: 'GraalVM',
       },
     },
     downloadedJres: [],
@@ -529,12 +585,27 @@ export default {
      * Apply a JRE
      */
     async applyJre(jrePath) {
+      const binPath = await new Promise((res) => {
+        access(
+          join(
+            constants.DOTLUNARCLIENT,
+            'solartweaks',
+            'jres',
+            jrePath,
+            'Contents'
+          ),
+          (err) => {
+            if (err) res('bin');
+            else res('Contents/Home/bin');
+          }
+        );
+      });
       this.jrePath = join(
         constants.DOTLUNARCLIENT,
         'solartweaks',
         'jres',
         jrePath,
-        'bin'
+        binPath
       );
       await settings.set('jrePath', this.jrePath);
     },
@@ -578,7 +649,8 @@ export default {
     this.skipChecks = await settings.get('skipChecks');
     this.downloadedJres = await settings.get('downloadedJres');
 
-    if (platform() !== 'win32') this.jreDownloaderEnabled = false;
+    if (platform() !== 'win32' && platform() !== 'darwin')
+      this.jreDownloaderEnabled = false;
 
     if (cache.has('availableJres'))
       return (this.availableJres = cache.get('availableJres'));
@@ -588,11 +660,13 @@ export default {
       .then((response) => {
         cache.set('availableJres', response.data);
         this.availableJres = response.data;
+        logger.info(`Fetched JREs:`, response.data);
       })
-      .catch(() => {
+      .catch((err) => {
         cache.set('availableJres', this.availableJres);
         logger.warn(
-          'Failed to fetch available JREs, falling back to hardcoded data...'
+          'Failed to fetch available JREs, falling back to hardcoded data...',
+          err
         );
       });
   },

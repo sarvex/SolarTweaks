@@ -352,6 +352,7 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 10px 0;
   cursor: pointer;
+  border-radius: 15px;
 }
 
 .server-play-btn:disabled {
