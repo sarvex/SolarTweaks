@@ -656,7 +656,7 @@ export default {
       return (this.availableJres = cache.get('availableJres'));
 
     await axios
-      .get(`${constants.API_URL}/updater/jre`)
+      .get(`${constants.API_URL}/launcher/jreDownloader`)
       .then((response) => {
         cache.set('availableJres', response.data);
         this.availableJres = response.data;
