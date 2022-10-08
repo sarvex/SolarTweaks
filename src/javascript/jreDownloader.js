@@ -17,7 +17,7 @@ const logger = new Logger('jreDownloader');
 export async function downloadJre(_jre) {
   let jre;
   if (platform() === 'win32') {
-    arch() === 'x64' ? (jre = _jre['WindowsX64']) : (jre = _jre['WindowsX32']);
+    arch() === 'x64' ? (jre = _jre['64']) : (jre = _jre['32']);
   } else if (platform() === 'darwin') {
     arch() === 'arm64' ? (jre = _jre['MacArm']) : (jre = _jre['MacX64']);
   } else {

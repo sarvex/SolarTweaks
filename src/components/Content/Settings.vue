@@ -380,13 +380,13 @@ export default {
     jreDownloaderEnabled: true,
     availableJres: {
       Temurin: {
-        WindowsX32: {
+        32: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.1_12.zip',
           checksum:
             'f4bb1323cb34cdb42b92d825fe36fddd78b274f071b8971c5207a66a0e82748a',
           folder: 'jdk-17.0.1+12-jre',
         },
-        WindowsX64: {
+        64: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.2_8.zip',
           checksum:
             'c3204a19aede95ed02ad0f427210855a951d845ab7f806fb56b774daf2572454',
@@ -409,13 +409,13 @@ export default {
         name: 'Temurin',
       },
       Zulu: {
-        WindowsX32: {
+        32: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_i686.zip',
           checksum:
             'cb86ffb1232dfa77d6a538b4438877721180388716b7cf7403afd04dd9934ce1',
           folder: 'zulu17.32.13-ca-jre17.0.2-win_i686',
         },
-        WindowsX64: {
+        64: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_x64.zip',
           checksum:
             'a8f31891c563890c65ac20ff52906f16891a62d7bb497e389964153205cfd588',
@@ -436,13 +436,13 @@ export default {
         name: 'Zulu',
       },
       GraalVM: {
-        WindowsX32: {
+        32: {
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
           checksum:
             '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
           folder: 'graalvm-ce-java17-22.1.0',
         },
-        WindowsX64: {
+        64: {
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
           checksum:
             '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
