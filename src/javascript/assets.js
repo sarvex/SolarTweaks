@@ -78,13 +78,16 @@ export async function downloadLunarAssets(metadata) {
         true
       )
         .then(async () => {
-          const data = await fs.readFile(indexPath, 'utf8');
-          const asyncTasks = [];
-          for (const index in data.split('\n')) {
-            asyncTasks.push(checkAsset(metadata, data, index));
+          const data = await fs.readFile(indexPath, 'utf8' );
+          const assets = data.split('\n');
+          while (assets.length) {
+              const tasks = [];
+              for (const index of assets.splice(0, 4000)) {
+                  tasks.push(checkAsset(metadata, data, data.split('\n').indexOf(index)));
+              }
+              await Promise.all(tasks)
           }
-          await Promise.all(asyncTasks);
-          resolve();
+          resolve()
         })
         .catch(reject);
     };

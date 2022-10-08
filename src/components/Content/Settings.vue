@@ -406,6 +406,20 @@ export default {
           folder: 'jdk-17.0.4.1+1-jre',
           tar: true,
         },
+        LinuxX64: {
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.4.1_1.tar.gz',
+          checksum:
+            '5fbf8b62c44f10be2efab97c5f5dbf15b74fae31e451ec10abbc74e54a04ff44',
+            folder: 'jdk-17.0.4.1+1',
+            tar: true,
+        },
+        LinuxArm: {
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.4.1_1.tar.gz',
+          checksum:
+            '3c7460de77421284b38b4e57cb1bd584a6cef55c34fc51a12270620544de2b8a',
+            folder: 'jdk-17.0.4.1+1',
+            tar: true,
+        },
         name: 'Temurin',
       },
       Zulu: {
@@ -433,6 +447,20 @@ export default {
             'a893ad72164ff59c69379a4539297b1db4ad7e0a5e6116f1c1fbdf049dee696e',
           folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_x64',
         },
+        LinuxX64: {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_x64.tar.gz',
+          checksum:
+            '6cff997a8befbeae2a64d1faeeb9b1ebd36e53a84b4d162a74fefaf7f53b49d7',
+          folder: 'zulu17.36.17-ca-jre17.0.4.1-linux_x64',
+          tar: true,
+        },
+        LinuxArm : {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_aarch64.tar.gz',
+          checksum:
+            '22c426e8065185d62d6a7113c49d43ed23cd612353265a8c6d39e61107c9605c',
+          folder: 'zulu17.36.17-ca-jre17.0.4.1-linux_aarch64',
+          tar: true,
+        },
         name: 'Zulu',
       },
       GraalVM: {
@@ -459,6 +487,20 @@ export default {
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-darwin-amd64-22.1.0.tar.gz',
           checksum:
             'b9327fa73531a822d9a27d25980396353869eefbd73fdcef89b4fceb9f529c75',
+          folder: 'graalvm-ce-java17-22.1.0',
+          tar: true,
+        },
+        LinuxX64: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-linux-amd64-22.1.0.tar.gz',
+          checksum:
+            'f11d46098efbf78465a875c502028767e3de410a31e45d92a9c5cf5046f42aa2',
+          folder: 'graalvm-ce-java17-22.1.0',
+          tar: true,
+        },
+        LinuxArm: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-linux-aarch64-22.1.0.tar.gz',
+          checksum:
+            '05128e361ed44beebc89495faaa504b0b975bf93aa5e512e217b3cf5e42dfada',
           folder: 'graalvm-ce-java17-22.1.0',
           tar: true,
         },
@@ -649,7 +691,7 @@ export default {
     this.skipChecks = await settings.get('skipChecks');
     this.downloadedJres = await settings.get('downloadedJres');
 
-    if (platform() !== 'win32' && platform() !== 'darwin')
+    if (platform() !== 'win32' && platform() !== 'darwin' && platform() !== 'linux') 
       this.jreDownloaderEnabled = false;
 
     if (cache.has('availableJres'))

@@ -19,10 +19,12 @@ export async function downloadJre(_jre) {
   if (platform() === 'win32') {
     arch() === 'x64' ? (jre = _jre['64']) : (jre = _jre['32']);
   } else if (platform() === 'darwin') {
-    arch() === 'arm64' ? (jre = _jre['MacArm']) : (jre = _jre['MacX64']);
+    arch() === 'arm64' ? (jre = _jre['MacX64']) : (jre = _jre['MacArm']);
+  } else if (platform() === 'linux') {
+    arch() === 'x64' ? (jre = _jre['LinuxX64']) : (jre = _jre['LinuxArm']);
   } else {
     logger.warn(
-      'Attempted to download a JRE on a non Windows or MacOS Operating System'
+      'Attempted to download a JRE on a non Windows, MacOS, or Linux Operating System'
     );
     return false;
   }
