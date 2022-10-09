@@ -24,7 +24,7 @@ export async function downloadJre(_jre) {
     arch() === 'x64' ? (jre = _jre['LinuxX64']) : (jre = _jre['LinuxArm']);
   } else {
     logger.warn(
-      'Attempted to download a JRE on a non Windows, MacOS, or Linux Operating System'
+      'Attempted to download a JRE on a non Windows, MacOS, or Linux Operating System!'
     );
     return false;
   }

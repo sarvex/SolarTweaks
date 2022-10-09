@@ -253,7 +253,7 @@
       <CardItem
         icon="fa-solid fa-file-zipper"
         title="JRE Downloader"
-        subtitle="⚠️ This feature is only available on Windows and Mac"
+        subtitle="⚠️ This feature is only available on Windows, MacOS, and Linux ⚠️"
         class="settings-card-item"
       >
         <div id="settings-jre-downloader">
@@ -376,7 +376,7 @@ export default {
     jrePath: '',
     debugMode: false,
     skipChecks: false,
-    // Enabled by default because a lot of people are on Windows and Mac
+    // Enabled by default because a lot of people are on Windows, Mac, and Linux.
     jreDownloaderEnabled: true,
     availableJres: {
       Temurin: {
