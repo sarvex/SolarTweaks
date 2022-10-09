@@ -28,7 +28,7 @@ export async function downloadJre(_jre) {
     );
     return false;
   }
-logger.info(jre)
+
   if (!jre) {
     logger.error(`Failed to get JRE from JREs List for ${_jre.name}`);
     return false;
