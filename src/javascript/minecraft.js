@@ -753,7 +753,7 @@ export async function checkAndLaunch(serverIp = null) {
   await axios
     .post(`${constants.API_URL}${constants.ENDPOINTS.LAUNCH}`, {
       item: 'launcher',
-      version: version.split(".").splice(0,2).join(".")
+      version: version.split(".").splice(0,2).join("."),
     })
     .catch((error) =>
       logger.warn(
