@@ -253,7 +253,7 @@
       <CardItem
         icon="fa-solid fa-file-zipper"
         title="JRE Downloader"
-        subtitle="⚠️ This feature is only available on Windows, MacOS, and Linux ⚠️"
+        subtitle="⚠️ If the download button does nothing, then it is unsupported."
         class="settings-card-item"
       >
         <div id="settings-jre-downloader">
@@ -446,20 +446,6 @@ export default {
           checksum:
             'a893ad72164ff59c69379a4539297b1db4ad7e0a5e6116f1c1fbdf049dee696e',
           folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_x64',
-        },
-        LinuxX64: {
-          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_x64.tar.gz',
-          checksum:
-            '6cff997a8befbeae2a64d1faeeb9b1ebd36e53a84b4d162a74fefaf7f53b49d7',
-          folder: 'zulu17.36.17-ca-jre17.0.4.1-linux_x64',
-          tar: true,
-        },
-        LinuxArm : {
-          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_aarch64.tar.gz',
-          checksum:
-            '22c426e8065185d62d6a7113c49d43ed23cd612353265a8c6d39e61107c9605c',
-          folder: 'zulu17.36.17-ca-jre17.0.4.1-linux_aarch64',
-          tar: true,
         },
         name: 'Zulu',
       },
