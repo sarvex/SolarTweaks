@@ -341,7 +341,7 @@ export default {
     ram: {
       minimum: 250,
       maximum: (totalmem() / 1024 / 1024) * 0.9,
-      current: 4000,
+      current: 2000,
     },
     resolution: {
       width: 854,

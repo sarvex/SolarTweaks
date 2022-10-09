@@ -28,6 +28,7 @@
     "extract-zip": "^2.0.1",
     "node-downloader-helper": "^2.1.0",
     "node-machine-id": "^1.1.12",
+    "pnpm": "^7.13.2",
     "utf-8-validate": "^5.0.7",
     "vue": "^3.0.0",
     "vuex": "^4.0.2"

@@ -19,7 +19,7 @@ export async function downloadJre(_jre) {
   if (platform() === 'win32') {
     arch() === 'x64' ? (jre = _jre['64']) : (jre = _jre['32']);
   } else if (platform() === 'darwin') {
-    arch() === 'arm64' ? (jre = _jre['MacX64']) : (jre = _jre['MacArm']);
+    arch() === 'x64' ? (jre = _jre['MacX64']) : (jre = _jre['MacArm']);
   } else if (platform() === 'linux') {
     arch() === 'x64' ? (jre = _jre['LinuxX64']) : (jre = _jre['LinuxArm']);
   } else {
@@ -28,7 +28,7 @@ export async function downloadJre(_jre) {
     );
     return false;
   }
-
+logger.info(jre)
   if (!jre) {
     logger.error(`Failed to get JRE from JREs List for ${_jre.name}`);
     return false;
