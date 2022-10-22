@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import extract from 'extract-zip';
-import { move } from 'fs-extra';
+import { move, pathExists } from 'fs-extra';
 import fs from 'fs/promises';
 import { arch, platform } from 'os';
 import { join } from 'path';
@@ -11,17 +11,31 @@ const logger = new Logger('jreDownloader');
 
 /**
  * Download and extract a Java JRE from the given manifest file
- * @param {any} _jre JRE to download
+ * @typedef {{url: string, checksum: string, folder?: string, tar?: boolean}} JREPlatform
+ * @param {{
+ *  name: string,
+ *  32: JREPlatform,
+ *  64: JREPlatform,
+ *  MacArm: JREPlatform,
+ *  MacX64: JREPlatform,
+ *  LinuxArm: JREPlatform,
+ *  LinuxX64: JREPlatform
+ * }} _jre JRE to download
  * @returns {Promise<boolean>} True if successful
  */
 export async function downloadJre(_jre) {
+  /** @type {JREPlatform} */
   let jre;
-  if (platform() === 'win32') {
-    arch() === 'x64' ? (jre = _jre['64']) : (jre = _jre['32']);
-  } else if (platform() === 'darwin') {
-    arch() === 'x64' ? (jre = _jre['MacX64']) : (jre = _jre['MacArm']);
-  } else if (platform() === 'linux') {
-    arch() === 'x64' ? (jre = _jre['LinuxX64']) : (jre = _jre['LinuxArm']);
+  /** @type {'aix' | 'darwin' | 'freebsd' | 'linux' | 'openbsd' | 'sunos' | 'win32'} */
+  const plat = platform();
+  /** @type {'arm' | 'arm64' | 'ia32' | 'mips' | 'mipsel' | 'ppc' | 'ppc64' | 's390' | 's390x' | 'x64'} */
+  const a = arch();
+  if (plat === 'win32') {
+    jre = _jre[a === 'x64' ? '64' : '32'];
+  } else if (plat === 'darwin') {
+    jre = _jre[a === 'x64' ? 'MacX64' : 'MacArm'];
+  } else if (plat === 'linux') {
+    jre = _jre[a === 'x64' ? 'LinuxX64' : 'LinuxArm'];
   } else {
     logger.warn(
       'Attempted to download a JRE on a non Windows, MacOS, or Linux Operating System!'
@@ -51,22 +65,28 @@ export async function downloadJre(_jre) {
     true
   );
 
+  await fs.rmdir(jrePath).catch(() => {
+    // Folder doesn't exist, do nothing
+  });
+  await fs.rmdir(jrePath + '_temp').catch(() => {
+    // Folder doesn't exist, do nothing
+  });
+
   if (jre.tar) {
     await new Promise((res) =>
       fs
         .mkdir(jrePath + '_temp')
         .then(res)
-        .catch(() => {
-          logger.warn('JRE Temp Path already exists, deleting...');
-          fs.rmdir(jrePath + '_temp').then(res);
-        })
+        .catch(() =>
+          res(
+            logger.warn('JRE Temp Path already exists, might cause issues...')
+          )
+        )
     );
     if (
       !(await new Promise((res) =>
         exec(
-          `cd ${jresPath}; tar -xzvf ${_jre.name}.tar.gz -C ${
-            jrePath + '_temp'
-          }`,
+          `tar -xzvf ${jrePath}.tar.gz -C ${jrePath + '_temp'}`,
           async (err) => {
             if (err) {
               logger.error(`Failed to extract ${jrePath}.tar.gz`, err);
@@ -94,8 +114,24 @@ export async function downloadJre(_jre) {
       return false;
   }
 
-  await move(join(jrePath + '_temp', jre.folder), jrePath, { overwrite: true });
-  await fs.rmdir(jrePath + '_temp');
+  let jreFolder =
+    (await fs.readdir(join(jrePath + '_temp')))?.[0] || jre.folder;
+  if (!jreFolder) {
+    logger.error(
+      `Failed to find JRE directory in \`.lunarclient/solartweaks/jres/${jrePath}_temp\``
+    );
+    await fs.rmdir(jrePath + '_temp', {
+      recursive: true,
+    });
+    await fs.rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
+    return false;
+  }
+  if (await pathExists(join(jrePath + '_temp', jreFolder, 'Contents')))
+    jreFolder = join(jreFolder, '/Contents/Home');
+  await move(join(jrePath + '_temp', jreFolder), jrePath, { overwrite: true });
+  await fs.rmdir(jrePath + '_temp', {
+    recursive: true,
+  });
   await fs.rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
 
   return true;

@@ -9,6 +9,7 @@ export default {
     LUNARCLIENT: 'https://lunarclient.com/',
     SERVER_STATUS_ENDPOINT: 'https://mcapi.us/server/status',
     LC_METADATA_ENDPOINT: 'https://api.lunarclientprod.com/launcher/launch',
+    WEBSITE: 'https://solartweaks.com',
   },
   API_URL: 'https://server.solartweaks.com/api',
   PATCHER: {

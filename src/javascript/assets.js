@@ -31,7 +31,7 @@ async function checkAsset(metadata, data, index) {
 
     fs.exists(path).then(async (exists) => {
       if (exists) {
-        const match = await checkHash(path, sha1, 'sha1');
+        const match = await checkHash(path, sha1, 'sha1', false);
         if (match) resolve();
         else
           await downloadAndSaveFile(
@@ -39,7 +39,8 @@ async function checkAsset(metadata, data, index) {
             path,
             'blob',
             sha1,
-            'sha1'
+            'sha1',
+            false
           ).then(() => resolve);
       } else {
         await downloadAndSaveFile(
@@ -47,7 +48,8 @@ async function checkAsset(metadata, data, index) {
           path,
           'blob',
           sha1,
-          'sha1'
+          'sha1',
+          false
         ).then(() => resolve);
       }
     });
@@ -78,16 +80,20 @@ export async function downloadLunarAssets(metadata) {
         true
       )
         .then(async () => {
-          const data = await fs.readFile(indexPath, 'utf8' );
+          const data = await fs.readFile(indexPath, 'utf8');
           const assets = data.split('\n');
+          logger.info(`Checking ${assets.length} Total Assets`);
           while (assets.length) {
-              const tasks = [];
-              for (const index of assets.splice(0, 4000)) {
-                  tasks.push(checkAsset(metadata, data, data.split('\n').indexOf(index)));
-              }
-              await Promise.all(tasks)
+            const group = assets.splice(0, 2500);
+            logger.info(`Checking ${group.length} Assets`);
+            await Promise.all(
+              group.map((i) =>
+                checkAsset(metadata, data, data.split('\n').indexOf(i))
+              )
+            );
           }
-          resolve()
+          logger.info('Completed Checking Assets');
+          resolve();
         })
         .catch(reject);
     };

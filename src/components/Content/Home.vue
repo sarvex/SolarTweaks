@@ -204,11 +204,11 @@ export default {
 .post-button {
   background-color: #2b71ce;
   border: none;
-  width: 100px;
+  padding: 0px 10px;
   font-weight: 400;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
   height: 25px;
-  border-radius: 2px;
+  border-radius: 5px;
   margin-top: 12px;
   margin-right: 5px;
   cursor: pointer;

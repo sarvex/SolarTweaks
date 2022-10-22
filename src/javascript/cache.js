@@ -1,7 +1,9 @@
+export default Map;
+
 /**
  * Little cache system used to cache API responses (mainly used by the Servers component)
  */
-export default class {
+export class Cache {
   constructor() {
     this.cache = {};
   }

@@ -58,7 +58,7 @@
               :min="ram.minimum"
               :max="ram.maximum"
               v-model="ram.current"
-              step="250"
+              step="256"
               class="slider"
               id="settings-ram-slider"
               @change="updateRam()"
@@ -282,9 +282,26 @@
               <span v-if="downloadingJre !== jre.name">Download</span>
             </button>
             <button
+              class="jre-item-button-blue"
+              @click="applyJre(jre.name)"
+              v-if="
+                downloadedJres.includes(jre.name) &&
+                jrePath.includes(`/.lunarclient/solartweaks/jres/${jre.name}/`)
+              "
+              :disabled="
+                !downloadedJres.includes(jre.name) || !jreDownloaderEnabled
+              "
+            >
+              <i class="fa-solid fa-screwdriver-wrench jre-item-icon"></i
+              >Applied
+            </button>
+            <button
               class="jre-item-button"
               @click="applyJre(jre.name)"
-              v-if="downloadedJres.includes(jre.name)"
+              v-if="
+                downloadedJres.includes(jre.name) &&
+                !jrePath.includes(`/solartweaks/jres/${jre.name}/`)
+              "
               :disabled="
                 !downloadedJres.includes(jre.name) || !jreDownloaderEnabled
               "
@@ -316,7 +333,7 @@ import { remote } from 'electron';
 import settings from 'electron-settings';
 import { totalmem, platform } from 'os';
 import { join } from 'path';
-import { defaultSettings } from '../../javascript/settings';
+import { defaultSettings, getDefaultJREPath } from '../../javascript/settings';
 import axios from 'axios';
 import { cache } from '../../main';
 import {
@@ -325,7 +342,6 @@ import {
 } from '../../javascript/jreDownloader';
 import Logger from '../../javascript/logger';
 import constants from '../../constants';
-import { access } from 'fs';
 const logger = new Logger('settings');
 
 export default {
@@ -339,9 +355,9 @@ export default {
   data: () => ({
     directories: [],
     ram: {
-      minimum: 250,
-      maximum: (totalmem() / 1024 / 1024) * 0.9,
-      current: 2000,
+      minimum: 256,
+      maximum: totalmem() / 1024 / 1024,
+      current: 2048,
     },
     resolution: {
       width: 854,
@@ -353,24 +369,24 @@ export default {
       { name: 'Keep Launcher Open', id: 'keep' },
     ],
     actionAfterLaunch: 'close',
-    jvmArguments: '',
+    jvmArguments: '-XX:+DisableAttachMechanism',
     jvmArgumentsPresetsVisible: false,
     jvmArgumentsPresets: [
       {
         name: 'Default',
-        args: '-Xms1G -Xmx1G -Xmn768m -XX:+DisableAttachMechanism',
+        args: '-XX:+DisableAttachMechanism',
       },
       {
         name: 'Zulu optimized',
-        args: '-Xverify:none -Xss2M -Xmn1G -XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=32 -XX:G1HeapRegionSize=8M -XX:GCTimeLimit=50 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:+EliminateLocks -XX:+AggressiveHeap -XX:+EagerJVMCI',
+        args: '-Xverify:none -Xss2M -XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=32 -XX:G1HeapRegionSize=8M -XX:GCTimeLimit=50 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:+EliminateLocks -XX:+AggressiveHeap -XX:+EagerJVMCI',
       },
       {
         name: 'GraalVM Community',
-        args: '-Xms3G -Xmx3G -Xmn1G -XX:+DisableAttachMechanism -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M -XX:+EnableJVMCI -XX:+UseJVMCICompiler -XX:+EagerJVMCI -Djvmci.Compiler=graal',
+        args: '-XX:+DisableAttachMechanism -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M -XX:+EnableJVMCI -XX:+UseJVMCICompiler -XX:+EagerJVMCI -Djvmci.Compiler=graal',
       },
       {
         name: 'GraalVM Enterprise',
-        args: '-Xverify:none -Xss2M -Xmn1G -XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=32 -XX:G1HeapRegionSize=8M -XX:GCTimeLimit=50 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:JVMCIThreads=2 -XX:+EliminateLocks -XX:+AggressiveHeap -Dgraal.TuneInlinerExploration=1 -XX:+EagerJVMCI',
+        args: '-Xverify:none -Xss2M -XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=32 -XX:G1HeapRegionSize=8M -XX:GCTimeLimit=50 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:JVMCIThreads=2 -XX:+EliminateLocks -XX:+AggressiveHeap -Dgraal.TuneInlinerExploration=1 -XX:+EagerJVMCI',
       },
     ],
     jrePath: '',
@@ -381,113 +397,103 @@ export default {
     availableJres: {
       Temurin: {
         32: {
-          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.1_12.zip',
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.4.1_1.zip',
           checksum:
-            'f4bb1323cb34cdb42b92d825fe36fddd78b274f071b8971c5207a66a0e82748a',
-          folder: 'jdk-17.0.1+12-jre',
+            '61e1a7aa34c4ad876a8ef6176ef17193e4fdaf1d7d402603f677800ec9e06de9',
         },
         64: {
-          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.2_8.zip',
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.4.1_1.zip',
           checksum:
-            'c3204a19aede95ed02ad0f427210855a951d845ab7f806fb56b774daf2572454',
-          folder: 'jdk-17.0.2+8-jre',
+            '10b007eb1b424a83729e335917a4851e426d716349439aef71d63bbcba24b702',
         },
         MacArm: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.4.1_1.tar.gz',
           checksum:
             '63a32fe611f2666856e84b79305eb80609de229bbce4f13991b961797aa88bf8',
-          folder: 'jdk-17.0.4.1+1-jre',
           tar: true,
         },
         MacX64: {
           url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_x64_mac_hotspot_17.0.4.1_1.tar.gz',
           checksum:
             '9c59e45a9a6cbc1b8d671c4a88bb8d9b8929fae067df0d0a73b1ca71781a0996',
-          folder: 'jdk-17.0.4.1+1-jre',
+          tar: true,
+        },
+        LinuxArm: {
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_aarch64_linux_hotspot_17.0.4.1_1.tar.gz',
+          checksum:
+            '2e4137529319cd7935f74e1289025b7b4c794c0fb47a3d138adffbd1bbc0ea58',
           tar: true,
         },
         LinuxX64: {
-          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.4.1_1.tar.gz',
+          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jre_x64_linux_hotspot_17.0.4.1_1.tar.gz',
           checksum:
-            '5fbf8b62c44f10be2efab97c5f5dbf15b74fae31e451ec10abbc74e54a04ff44',
-            folder: 'jdk-17.0.4.1+1',
-            tar: true,
-        },
-        LinuxArm: {
-          url: 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.4.1_1.tar.gz',
-          checksum:
-            '3c7460de77421284b38b4e57cb1bd584a6cef55c34fc51a12270620544de2b8a',
-            folder: 'jdk-17.0.4.1+1',
-            tar: true,
+            'e96814ee145a599397d91e16831d2dddc3c6b8e8517a8527e28e727649aaa2d1',
+          tar: true,
         },
         name: 'Temurin',
       },
       Zulu: {
         32: {
-          url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_i686.zip',
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.19-ca-jre17.0.4.1-win_i686.zip',
           checksum:
-            'cb86ffb1232dfa77d6a538b4438877721180388716b7cf7403afd04dd9934ce1',
-          folder: 'zulu17.32.13-ca-jre17.0.2-win_i686',
+            '1b9e186a73a14a17d243c62c66babe09fdcf91cabbb02715facd8dd24d5416c2',
         },
         64: {
-          url: 'https://cdn.azul.com/zulu/bin/zulu17.32.13-ca-jre17.0.2-win_x64.zip',
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-win_x64.zip',
           checksum:
-            'a8f31891c563890c65ac20ff52906f16891a62d7bb497e389964153205cfd588',
-          folder: 'zulu17.32.13-ca-jre17.0.2-win_x64',
+            '07d35e9c9c42ee9da54c1b839cb19280b5b95921cc59efceae1a601e72642946',
         },
         MacArm: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-macosx_aarch64.zip',
           checksum:
             'a3fd5a58756ccb3e11af1c9cbc289178070d7166dec0aa1a8d046aa6514ecb20',
-          folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_aarch64',
         },
         MacX64: {
           url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-macosx_x64.zip',
           checksum:
             'a893ad72164ff59c69379a4539297b1db4ad7e0a5e6116f1c1fbdf049dee696e',
-          folder: 'zulu17.36.17-ca-jre17.0.4.1-macosx_x64',
+        },
+        LinuxArm: {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_aarch64.tar.gz',
+          checksum:
+            '22c426e8065185d62d6a7113c49d43ed23cd612353265a8c6d39e61107c9605c',
+          tar: true,
+        },
+        LinuxX64: {
+          url: 'https://cdn.azul.com/zulu/bin/zulu17.36.17-ca-jre17.0.4.1-linux_x64.zip',
+          checksum:
+            '2d3ff2fb0dbcfcfbde8f9f931c42bfb40fcf35d0ade3864f3dbb54c7dfcf20b6',
         },
         name: 'Zulu',
       },
       GraalVM: {
-        32: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
-          checksum:
-            '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
-          folder: 'graalvm-ce-java17-22.1.0',
-        },
         64: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-windows-amd64-22.1.0.zip',
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-windows-amd64-22.2.0.zip',
           checksum:
-            '3397558b3dfeaa0a10882da4dae056ba02a9906e3a6721fd36825266b44dc51a',
-          folder: 'graalvm-ce-java17-22.1.0',
+            '0930735fafe50f295b3e46c5e860ca3500aa76bdeb02f1af142bedab88a371c8',
         },
         MacArm: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-darwin-aarch64-22.1.0.tar.gz',
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-darwin-aarch64-22.2.0.tar.gz',
           checksum:
-            '06075cd390bd261721392cd6fd967b1d28c0500d1b5625272ea906038e5cd533',
-          folder: 'graalvm-ce-java17-22.1.0',
+            'cfbeb38cd707a330048ab2140cb185176201c5cb654df752fcb4bd95e899b4ec',
           tar: true,
         },
         MacX64: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-darwin-amd64-22.1.0.tar.gz',
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-darwin-amd64-22.2.0.tar.gz',
           checksum:
-            'b9327fa73531a822d9a27d25980396353869eefbd73fdcef89b4fceb9f529c75',
-          folder: 'graalvm-ce-java17-22.1.0',
-          tar: true,
-        },
-        LinuxX64: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-linux-amd64-22.1.0.tar.gz',
-          checksum:
-            'f11d46098efbf78465a875c502028767e3de410a31e45d92a9c5cf5046f42aa2',
-          folder: 'graalvm-ce-java17-22.1.0',
+            'b92b6f5f7f11282f20c8f8b94ea1c16d776cbadd7b254119836a7ace9f513b0d',
           tar: true,
         },
         LinuxArm: {
-          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.1.0/graalvm-ce-java17-linux-aarch64-22.1.0.tar.gz',
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-linux-aarch64-22.2.0.tar.gz',
           checksum:
-            '05128e361ed44beebc89495faaa504b0b975bf93aa5e512e217b3cf5e42dfada',
-          folder: 'graalvm-ce-java17-22.1.0',
+            '3025cc887bdaa088c89601b42931abc61dfd108aaad386abee8c1e08c913504d',
+          tar: true,
+        },
+        LinuxX64: {
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-linux-amd64-22.2.0.tar.gz',
+          checksum:
+            'cd903566d030bf44a8c5c0f50914fc9c9d89cb2954e1f90512b137a0bfedc3ca',
           tar: true,
         },
         name: 'GraalVM',
@@ -584,8 +590,14 @@ export default {
      * Reset JRE path
      */
     async resetJrePath() {
-      this.jrePath = defaultSettings.jrePath;
-      await settings.set('jrePath', defaultSettings.jrePath);
+      this.jrePath = await getDefaultJREPath();
+      await settings.set('jrePath', this.jrePath);
+      this.jvmArguments =
+        this.jvmArgumentsPresets.find(
+          (i) => i.name === (this.jrePath != '' ? 'Zulu optimized' : 'Default')
+        )?.args || '';
+      await this.updateJvmArguments();
+      logger.info(`Reset JRE Path to \`${this.jrePath}\``);
     },
 
     /**
@@ -613,29 +625,26 @@ export default {
      * Apply a JRE
      */
     async applyJre(jrePath) {
-      const binPath = await new Promise((res) => {
-        access(
-          join(
-            constants.DOTLUNARCLIENT,
-            'solartweaks',
-            'jres',
-            jrePath,
-            'Contents'
-          ),
-          (err) => {
-            if (err) res('bin');
-            else res('Contents/Home/bin');
-          }
-        );
-      });
       this.jrePath = join(
         constants.DOTLUNARCLIENT,
         'solartweaks',
         'jres',
         jrePath,
-        binPath
+        'bin'
       );
+      if (this.jrePath === (await settings.get('jrePath'))) return;
+      this.jvmArguments =
+        this.jvmArgumentsPresets.find(
+          (i) =>
+            i.name ===
+            (jrePath === 'Zulu'
+              ? 'Zulu optimized'
+              : jrePath === 'GraalVM'
+              ? 'GraalVM Community'
+              : 'Default')
+        )?.args || '';
       await settings.set('jrePath', this.jrePath);
+      await this.updateJvmArguments();
     },
 
     /**
@@ -647,9 +656,16 @@ export default {
       this.downloadingJre = jre.name;
       const success = await _downloadJre(jre);
 
+      logger.info(
+        `${success ? 'Successfully Downloaded' : 'Failed to Download'} JRE ${
+          jre.name
+        }`
+      );
+
       if (success) {
         this.downloadedJres.push(jre.name);
-        this.updateDownloadedJres();
+        await this.updateDownloadedJres();
+        await this.applyJre(jre.name);
       }
 
       this.downloadingJre = '';
@@ -663,6 +679,8 @@ export default {
       this.downloadedJres = this.downloadedJres.filter((name) => name !== jre);
       await this.updateDownloadedJres();
       await _removeJre(jre);
+      if (this.jrePath.includes(`/solartweaks/jres/${jre}/`))
+        await this.resetJrePath();
     },
   },
 
@@ -677,7 +695,11 @@ export default {
     this.skipChecks = await settings.get('skipChecks');
     this.downloadedJres = await settings.get('downloadedJres');
 
-    if (platform() !== 'win32' && platform() !== 'darwin' && platform() !== 'linux') 
+    if (
+      platform() !== 'win32' &&
+      platform() !== 'darwin' &&
+      platform() !== 'linux'
+    )
       this.jreDownloaderEnabled = false;
 
     if (cache.has('availableJres'))
@@ -688,7 +710,7 @@ export default {
       .then((response) => {
         cache.set('availableJres', response.data);
         this.availableJres = response.data;
-        logger.info(`Fetched JREs:`, response.data);
+        logger.info(`Fetched available JREs:`, response.data);
       })
       .catch((err) => {
         cache.set('availableJres', this.availableJres);
@@ -1130,12 +1152,35 @@ export default {
   cursor: pointer;
 }
 
+.jre-item-button-blue {
+  margin-left: 5px;
+  border: none;
+  background-color: #196d35;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+  cursor: not-allowed;
+}
+.jre-item-button-blue:disabled {
+  margin-left: 5px;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+  background-color: #343434;
+}
+
 .jre-item-button.jre-item-button-red {
   background-color: #dd3e3e;
 }
 
 .jre-item-button.jre-item-button-red:hover {
   background-color: #c12c2c;
+}
+
+.jre-item-button.jre-item-button-red:disabled {
+  background-color: #343434;
+  cursor: not-allowed;
 }
 
 .jre-item-button:hover {

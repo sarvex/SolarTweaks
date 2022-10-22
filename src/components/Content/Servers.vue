@@ -202,7 +202,7 @@ export default {
       }
       if (content.status === 'success') {
         server.playerCount = content.players.now;
-        server.icon = content.favicon ? content.favicon : placeHolderIcon;
+        server.icon = content.favicon ?? placeHolderIcon;
         server.status = 'Online';
       } else {
         server.playerCount = 'Unknown';
@@ -259,11 +259,11 @@ export default {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.45s ease;
 }
 
 #add-server-btn:hover {
-  transform: scale(1.25);
+  transform: perspective(1px) scale(1.25);
 }
 
 .add-server-input {
@@ -285,11 +285,12 @@ export default {
   cursor: pointer;
   font-size: 15px;
   margin-top: 7px;
+  transform: perspective(1px) scale(1);
   transition: transform 0.2s ease-in-out;
 }
 
 #add-server-submit:hover {
-  transform: scale(1.1);
+  transform: perspective(1px) scale(1.1);
 }
 
 .server-container {
@@ -298,11 +299,16 @@ export default {
   width: 370px;
   height: 150px;
   border-radius: 10px;
-  transition: transform 0.3s ease;
+  transform: perspective(1px) scale(1);
+  -webkit-transform: perspective(1px) scale(1);
+  font-smooth: subpixel-antialiased;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transition: transform 0.4s ease;
 }
 
 .server-container:hover {
-  transform: scale(1.02);
+  transform: perspective(1px) scale(1.05);
+  -webkit-transform: perspective(1px) scale(1.05);
 }
 
 .server-icon {

@@ -43,13 +43,18 @@
             v-bind:key="availableVersion.version"
             @click="selectVersion(availableVersion.version)"
           >
-            <div
-              class="select-version-card-inner-container"
-              :style="`background: url('${availableVersion.background}')`"
-            >
+            <div class="select-version-card-inner-container">
+              <div
+                class="select-version-card-inner-icon"
+                :style="`background: url('${availableVersion.frontbg}'); background-size: cover;`"
+              ></div>
               <h3 class="select-version-card-title">
                 Version {{ availableVersion.version }}
               </h3>
+              <div
+                className="select-version-card-inner-background"
+                :style="`background: url('${availableVersion.background}'); background-size: cover;`"
+              ></div>
             </div>
           </div>
         </div>
@@ -75,38 +80,38 @@ export default {
     availableVersions: [
       {
         version: '1.8.9',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_8.6a3c456844.webp',
+        background: 'https://i.imgur.com/LnH3eXS.png',
+        frontbg: 'https://i.imgur.com/0hmHVkF.png',
       },
       {
         version: '1.19.2',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_19.acf6666238.webp',
+        background: 'https://i.imgur.com/ANRhYQm.png',
+        frontbg: 'https://i.imgur.com/fbPfBYF.png',
       },
       {
         version: '1.18.2',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_18.239841c879.webp',
+        background: 'https://i.imgur.com/mmqLgFc.png',
+        frontbg: 'https://i.imgur.com/RmyDXMu.png',
       },
       {
         version: '1.17.1',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_17.2f7a9cc65e.webp',
+        background: 'https://i.imgur.com/iFgh5i5.png',
+        frontbg: 'https://i.imgur.com/XAO2Ukn.png',
       },
       {
         version: '1.16.5',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_16.78253582ed.webp',
+        background: 'https://i.imgur.com/UejXvJ3.png',
+        frontbg: 'https://i.imgur.com/kuiEjtB.png',
       },
       {
         version: '1.12.2',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_12.00b99b874c.webp',
+        background: 'https://i.imgur.com/MuhKNvq.png',
+        frontbg: 'https://i.imgur.com/tEJfw4V.png',
       },
       {
         version: '1.7.10',
-        background:
-          'https://launcherimages.lunarclientcdn.com/versions/background/1_7.ee61751a41.webp',
+        background: 'https://i.imgur.com/0TBL35M.png',
+        frontbg: 'https://i.imgur.com/CarlaIS.png',
       },
     ],
   }),
@@ -184,14 +189,14 @@ export default {
   border-radius: 10px;
   backface-visibility: hidden;
   -webkit-font-smoothing: subpixel-antialiased;
-  -webkit-transform: scale3d(1, 1, 1);
-  transform: scale3d(1, 1, 1);
+  -webkit-transform: perspective(1px) scale3d(1, 1, 1);
+  transform: perspective(1px) scale3d(1, 1, 1);
 }
 
 #buttons:hover {
   box-shadow: 0 0 40px -5px #28af55;
-  -webkit-transform: scale3d(1.15, 1.15, 1.05);
-  transform: scale3d(1.05, 1.05, 1.05);
+  -webkit-transform: perspective(1px) scale3d(1.15, 1.15, 1.05);
+  transform: perspective(1px) scale3d(1.05, 1.05, 1.05);
 }
 
 #play-button {
@@ -316,25 +321,44 @@ export default {
 }
 
 .select-version-card-inner-container {
+  display: flex;
+  align-content: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  transform: scale(1.05);
-  -webkit-transform: scale(1.05);
+  transform: perspective(1px) scale(1.05);
+  -webkit-transform: perspective(1px) scale(1.05);
   text-shadow: 0 2px 0 rgb(0, 0, 0, 0.2);
-  transition: 0.4s ease;
-  filter: saturate(0);
+  transition: 0.55s ease;
+  filter: saturate(0) brightness(0.65);
   font-smoothing: subpixel-antialiased;
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .select-version-card-inner-container:hover {
   filter: saturate(1);
-  transform: scale(1.15);
-  -webkit-transform: scale(1.15);
+  transform: perspective(1px) scale(1.15);
+  -webkit-transform: perspective(1px) scale(1.15);
+}
+
+.select-version-card-inner-icon {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
 }
 
 .select-version-card-title {
-  font-size: 35px;
-  padding-top: 55px; /* Value found with something called bruteforce and my eyes with Dummy */
+  position: absolute;
+  font-family: 'Panton';
+  font-size: 30px;
+  letter-spacing: 1px;
+  margin-top: 58px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.select-version-card-inner-background {
+  height: 100%;
+  width: 100%;
 }
 </style>

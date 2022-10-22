@@ -55,7 +55,7 @@ export async function downloadAndSaveFile(
     if (logging) logger.debug(`Saved to ${path}`);
     if (hash) {
       // eslint-disable-next-line no-unused-vars
-      const isMatching = await checkHash(path, hash, algorithm);
+      const isMatching = await checkHash(path, hash, algorithm, logging);
       // Handle hash mismatch
     }
   }
@@ -72,7 +72,7 @@ export async function downloadAndSaveFile(
     await stream.pipeTo(ws);
     if (hash) {
       // eslint-disable-next-line no-unused-vars
-      const isMatching = await checkHash(path, hash, algorithm);
+      const isMatching = await checkHash(path, hash, algorithm, logging);
       // Handle hash mismatch
     }
   }

@@ -30,6 +30,7 @@
           class="titlebar-button"
           id="shortcut-btn"
           @click="createShortcut()"
+          v-if="platform === 'win32'"
         >
           <i class="fa-solid fa-share-from-square titlebar-button-icon"></i>
         </button>
@@ -45,6 +46,7 @@
 <script>
 import CreateShortcut from './CreateShortcut.vue';
 import { remote } from 'electron';
+import { platform } from 'os';
 
 export default {
   name: 'TitleBar',
@@ -76,6 +78,7 @@ export default {
         active: false,
       },
     ],
+    platform: platform(),
   }),
 
   methods: {
@@ -179,10 +182,11 @@ export default {
   height: 40px;
   border: none;
   box-shadow: 0 0 0 2px transparent;
-  transition: background-color 0.05s ease-out, box-shadow 0.05s ease-out;
+  transition: background-color 0.20s ease, box-shadow 0.20s ease;
   font-size: 16px;
   letter-spacing: 0px;
   font-weight: normal;
+  border-radius: 3px;
 }
 
 .nav-btn:hover {
@@ -191,7 +195,7 @@ export default {
 }
 
 .nav-btn:disabled {
-  box-shadow: 0 0 0 1px #2b2b2b;
+  box-shadow: 0 0 0 2px #2b2b2b;
   background-color: #1f1f1f;
   cursor: default;
 }

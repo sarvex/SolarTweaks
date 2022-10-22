@@ -4,13 +4,14 @@ import * as process from 'process';
 import { platform } from 'process';
 import Logger from './logger';
 const logger = new Logger('settings');
+import fs from './fs';
 
 /**
  * Setup settings for the application
  * Also check if the settings need to be reseted to default
  */
 export default async function setupSettings() {
-  logger.info('Setting up settings...');
+  logger.info(`Setting up settings at file path ${settings.file()}...`);
 
   // User's submitted servers
   if (!(await settings.has('servers'))) {
@@ -77,9 +78,8 @@ export default async function setupSettings() {
   }
 
   // User's selected JRE Path
-  if (!(await settings.has('jrePath'))) {
-    await settings.set('jrePath', defaultSettings.jrePath);
-  }
+  if (!(await settings.has('jrePath')) || (await settings.get('jrePath')) == '')
+    await settings.set('jrePath', await getDefaultJREPath());
 
   // Launch in debug mode
   if (!(await settings.has('debugMode'))) {
@@ -96,7 +96,7 @@ export default async function setupSettings() {
     await settings.set('downloadedJres', defaultSettings.downloadedJres);
   }
 
-  logger.info('Settings setup');
+  logger.info(`Settings Setup at ${settings.file()}`);
 }
 
 export function getDotMinecraftDirectory() {
@@ -115,6 +115,35 @@ export function getDotMinecraftDirectory() {
     default:
       break;
   }
+}
+
+export async function getDefaultJREPath() {
+  const LCJresPath = join(
+    platform === 'win32' ? process.env.USERPROFILE : process.env.HOME,
+    '.lunarclient',
+    'jre'
+  );
+  const dir1 = await fs.readdir(LCJresPath);
+  if (!dir1) {
+    logger.warn(
+      'Please run normal Lunar Client to setup `jre` folder inside `.lunarclient`'
+    );
+    return '';
+  }
+  const jreName = dir1.find((i) => !i.includes('.'));
+  if (!jreName) return '';
+  const dir2 = join(LCJresPath, jreName);
+  if (!dir2) return '';
+  const dir3 = join(
+    dir2,
+    (await fs.readdir(dir2))?.find((i) => i.startsWith('zulu')) || ''
+  );
+  if (!dir3 || dir3 == dir2) return '';
+  if (await fs.exists(join(dir3, 'bin'))) {
+    return join(dir3, 'bin');
+  } else if (await fs.exists(join(dir3, 'Contents'))) {
+    return join(dir3, 'Contents/Home/bin');
+  } else return '';
 }
 
 export const defaultSettings = {
@@ -136,29 +165,14 @@ export const defaultSettings = {
     { version: '1.18.2', path: getDotMinecraftDirectory() },
     { version: '1.19.2', path: getDotMinecraftDirectory() },
   ],
-  ram: 4000,
+  ram: 2048,
   resolution: {
     width: 854,
     height: 480,
   },
   actionAfterLaunch: 'close',
-  jvmArguments: '-XX:+DisableAttachMechanism',
-  jrePath:
-    platform === 'win32'
-      ? join(
-          process.env.USERPROFILE,
-          '.lunarclient',
-          'jre',
-          'zulu17.30.15-ca-fx-jre17.0.1-win_x64',
-          'bin'
-        )
-      : join(
-          process.env.HOME,
-          '.lunarclient',
-          'jre',
-          'zulu17.30.15-ca-fx-jre17.0.1-win_x64',
-          'bin'
-        ),
+  jvmArguments: '-XX:+DisableAttachMechanismm',
+  jrePath: '',
   debugMode: false,
   skipChecks: false,
   downloadedJres: [],

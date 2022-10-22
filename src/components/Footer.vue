@@ -7,7 +7,7 @@
         alt="Solar Tweaks Logo"
       />
       <h4 id="solartweaks-text" class="footer-text">
-        Solar Tweaks • {{ version }}
+        Solar Tweaks • {{ version }} • {{ os }}
       </h4>
     </div>
     <div id="links-container">
@@ -30,6 +30,7 @@
 
 <script>
 import { remote } from 'electron';
+import { platform } from 'process';
 import constants from '../constants';
 
 export default {
@@ -37,6 +38,14 @@ export default {
 
   data: () => ({
     version: remote.app.getVersion(),
+    os:
+      platform === 'win32'
+        ? 'Windows'
+        : platform === 'darwin'
+        ? 'MacOS'
+        : platform === 'linux'
+        ? 'Linux'
+        : `Unknown (${platform})`,
     links: [
       {
         icon: 'fa-brands fa-github',
@@ -46,9 +55,13 @@ export default {
         icon: 'fa-solid fa-comments',
         url: constants.links.GH_DISCUSSIONS,
       },
-            {
+      {
         icon: 'fa-brands fa-youtube',
         url: constants.links.YOUTUBE,
+      },
+      {
+        icon: 'fa-solid fa-globe',
+        url: constants.links.WEBSITE,
       },
     ],
   }),
@@ -119,7 +132,7 @@ export default {
 }
 
 .link:hover {
-  filter:brightness(1.5)
+  filter: brightness(1.5);
 }
 
 #mojang-disclaimer-container {
@@ -127,5 +140,6 @@ export default {
   letter-spacing: 0.2px;
   justify-self: right;
   margin-right: 15px;
+  margin-left: 25px;
 }
 </style>

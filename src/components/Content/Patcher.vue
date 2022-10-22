@@ -14,7 +14,9 @@
       <h1 id="options-title">{{ customizing.customization.name }}</h1>
     </div>
     <div id="options-content">
-      <h3 id="options-label">Inside the black inputs you must add custom values.</h3>
+      <h3 id="options-label">
+        Inside the black inputs you must add custom values.
+      </h3>
       <div
         v-for="(value, name) in customizing.customization.values"
         v-bind:key="name"
@@ -536,6 +538,16 @@ export default {
   border-radius: 15px;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  display: flex;
+}
+
+::-webkit-scrollbar-thumb {
+  height: 50px;
+  background-color: #424140;
+}
+
 #customize-container {
   display: grid;
   grid-template-columns: repeat(4, 250px);
@@ -543,8 +555,9 @@ export default {
   grid-column-gap: 35px;
   grid-row-gap: 30px;
   justify-content: center;
-  margin-top: 15px;
-  margin-bottom: 75px;
+  overflow-y: scroll;
+  height: 425px;
+  padding: 25px;
 }
 
 .customization-container {

@@ -17,6 +17,7 @@ import { clearLogs } from './javascript/logger';
 import { checkForUpdates } from './javascript/updater';
 import { remote } from 'electron';
 import { join } from 'path';
+import settings from 'electron-settings';
 import './assets/global.css';
 
 export default {
@@ -58,7 +59,11 @@ export default {
     }
 
     // Discord RPC
-    await login();
+    login();
+  },
+
+  beforeMount() {
+    console.log(`Settings Loaded at ${settings.file()}`);
   },
 };
 </script>
