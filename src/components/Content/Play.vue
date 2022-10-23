@@ -46,7 +46,7 @@
             <div class="select-version-card-inner-container">
               <div
                 class="select-version-card-inner-icon"
-                :style="`background: url('${availableVersion.frontbg}'); background-size: cover;`"
+                :style="`background: url('${availableVersion.foreground}'); background-size: cover;`"
               ></div>
               <h3 class="select-version-card-title">
                 Version {{ availableVersion.version }}
@@ -81,37 +81,37 @@ export default {
       {
         version: '1.8.9',
         background: 'https://i.imgur.com/LnH3eXS.png',
-        frontbg: 'https://i.imgur.com/0hmHVkF.png',
+        foreground: 'https://i.imgur.com/0hmHVkF.png',
       },
       {
         version: '1.19.2',
         background: 'https://i.imgur.com/ANRhYQm.png',
-        frontbg: 'https://i.imgur.com/fbPfBYF.png',
+        foreground: 'https://i.imgur.com/fbPfBYF.png',
       },
       {
         version: '1.18.2',
         background: 'https://i.imgur.com/mmqLgFc.png',
-        frontbg: 'https://i.imgur.com/RmyDXMu.png',
+        foreground: 'https://i.imgur.com/RmyDXMu.png',
       },
       {
         version: '1.17.1',
         background: 'https://i.imgur.com/iFgh5i5.png',
-        frontbg: 'https://i.imgur.com/XAO2Ukn.png',
+        foreground: 'https://i.imgur.com/XAO2Ukn.png',
       },
       {
         version: '1.16.5',
         background: 'https://i.imgur.com/UejXvJ3.png',
-        frontbg: 'https://i.imgur.com/kuiEjtB.png',
+        foreground: 'https://i.imgur.com/kuiEjtB.png',
       },
       {
         version: '1.12.2',
         background: 'https://i.imgur.com/MuhKNvq.png',
-        frontbg: 'https://i.imgur.com/tEJfw4V.png',
+        foreground: 'https://i.imgur.com/tEJfw4V.png',
       },
       {
         version: '1.7.10',
         background: 'https://i.imgur.com/0TBL35M.png',
-        frontbg: 'https://i.imgur.com/CarlaIS.png',
+        foreground: 'https://i.imgur.com/CarlaIS.png',
       },
     ],
   }),

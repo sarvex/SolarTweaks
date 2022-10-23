@@ -555,9 +555,8 @@ export default {
   grid-column-gap: 35px;
   grid-row-gap: 30px;
   justify-content: center;
-  overflow-y: scroll;
-  height: 425px;
-  padding: 25px;
+  margin-top: 15px;
+  margin-bottom: 75px;
 }
 
 .customization-container {
