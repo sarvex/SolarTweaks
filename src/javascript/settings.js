@@ -1,37 +1,39 @@
 import settings from 'electron-settings';
+import { existsSync } from 'fs';
+import { readdir } from 'fs/promises';
 import { join } from 'path';
 import * as process from 'process';
 import { platform } from 'process';
+import constants from '../constants';
 import Logger from './logger';
 const logger = new Logger('settings');
-import fs from './fs';
 
 /**
- * Setup settings for the application
- * Also check if the settings need to be reseted to default
+ * Setup settings for the application.
+ * Also check if the settings need to be reseted to default.
  */
 export default async function setupSettings() {
   logger.info(`Setting up settings at file path ${settings.file()}...`);
 
   // User's submitted servers
-  if (!(await settings.has('servers'))) {
+  if (!(await settings.has('servers')))
     await settings.set('servers', defaultSettings.servers);
-  }
 
   // User's selected customizations
-  if (!(await settings.has('customizations'))) {
+  if (!(await settings.has('customizations')))
     await settings.set('customizations', defaultSettings.customizations);
-  }
 
   // User's selected version
-  if (!(await settings.has('version'))) {
+  if (!(await settings.has('version')))
     await settings.set('version', defaultSettings.version);
-  }
+
+  if (!(await settings.has('module')))
+    await settings.set('module', defaultSettings.module);
 
   // User's selected launch directories
-  if (!(await settings.has('launchDirectories'))) {
+  if (!(await settings.has('launchDirectories')))
     await settings.set('launchDirectories', defaultSettings.launchDirectories);
-  } else {
+  else {
     const directories = await settings.get('launchDirectories');
     let launchDirectory = directories.find((d) => d.version === '1.8');
     if (launchDirectory) launchDirectory.version = '1.8.9';
@@ -47,54 +49,55 @@ export default async function setupSettings() {
       (d) => d.version === '1.7' || d.version === '1.17.10'
     );
     if (launchDirectory) launchDirectory.version = '1.7.10';
-    await settings.set('launchDirectories', directories);
-    if (!directories.find((d) => d.version === '1.19.2')) {
+    if (!directories.find((d) => d.version === '1.19.2'))
       directories.push({
         version: '1.19.2',
         directory: join(process.env.APPDATA, '.minecraft'),
       });
-      await settings.set('launchDirectories', directories);
-    }
+
+    await settings.set('launchDirectories', directories);
   }
 
   // User's selected ram
-  if (!(await settings.has('ram'))) {
+  if (!(await settings.has('ram')))
     await settings.set('ram', defaultSettings.ram);
-  }
 
   // User's selected resolution
-  if (!(await settings.has('resolution'))) {
+  if (!(await settings.has('resolution')))
     await settings.set('resolution', defaultSettings.resolution);
-  }
 
   // User's selected action after launch
-  if (!(await settings.has('actionAfterLaunch'))) {
+  if (!(await settings.has('actionAfterLaunch')))
     await settings.set('actionAfterLaunch', defaultSettings.actionAfterLaunch);
-  }
 
   // User's custom JVM arguments
-  if (!(await settings.has('jvmArguments'))) {
+  if (!(await settings.has('jvmArguments')))
     await settings.set('jvmArguments', defaultSettings.jvmArguments);
-  }
 
   // User's selected JRE Path
   if (!(await settings.has('jrePath')) || (await settings.get('jrePath')) == '')
     await settings.set('jrePath', await getDefaultJREPath());
 
   // Launch in debug mode
-  if (!(await settings.has('debugMode'))) {
+  if (!(await settings.has('debugMode')))
     await settings.set('debugMode', defaultSettings.debugMode);
-  }
 
   // Skip launch checks
-  if (!(await settings.has('skipChecks'))) {
+  if (!(await settings.has('skipChecks')))
     await settings.set('skipChecks', defaultSettings.skipChecks);
-  }
 
   // Downloaded JREs
-  if (!(await settings.has('downloadedJres'))) {
-    await settings.set('downloadedJres', defaultSettings.downloadedJres);
-  }
+  if (!(await settings.has('downloadedJres')))
+    await settings.set(
+      'downloadedJres',
+      (
+        await readdir(join(constants.SOLARTWEAKS_DIR, 'jres'), {
+          withFileTypes: true,
+        })
+      )
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name)
+    );
 
   logger.info(`Settings Setup at ${settings.file()}`);
 }
@@ -123,7 +126,7 @@ export async function getDefaultJREPath() {
     '.lunarclient',
     'jre'
   );
-  const dir1 = await fs.readdir(LCJresPath);
+  const dir1 = await readdir(LCJresPath);
   if (!dir1) {
     logger.warn(
       'Please run normal Lunar Client to setup `jre` folder inside `.lunarclient`'
@@ -136,12 +139,12 @@ export async function getDefaultJREPath() {
   if (!dir2) return '';
   const dir3 = join(
     dir2,
-    (await fs.readdir(dir2))?.find((i) => i.startsWith('zulu')) || ''
+    (await readdir(dir2))?.find((i) => i.startsWith('zulu')) || ''
   );
   if (!dir3 || dir3 == dir2) return '';
-  if (await fs.exists(join(dir3, 'bin'))) {
+  if (existsSync(join(dir3, 'bin'))) {
     return join(dir3, 'bin');
-  } else if (await fs.exists(join(dir3, 'Contents'))) {
+  } else if (existsSync(join(dir3, 'Contents'))) {
     return join(dir3, 'Contents/Home/bin');
   } else return '';
 }
@@ -156,6 +159,7 @@ export const defaultSettings = {
   ],
   customizations: [],
   version: '1.8.9',
+  module: 'lunar',
   launchDirectories: [
     { version: '1.7.10', path: getDotMinecraftDirectory() },
     { version: '1.8.9', path: getDotMinecraftDirectory() },
@@ -171,9 +175,8 @@ export const defaultSettings = {
     height: 480,
   },
   actionAfterLaunch: 'close',
-  jvmArguments: '-XX:+DisableAttachMechanismm',
+  jvmArguments: '-XX:+DisableAttachMechanism',
   jrePath: '',
   debugMode: false,
   skipChecks: false,
-  downloadedJres: [],
 };

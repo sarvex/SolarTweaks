@@ -34,8 +34,8 @@ export default {
 .card-header {
   width: 100%;
   height: 100px;
-  border-top-right-radius: 15px;
-  border-top-left-radius: 15px;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -58,12 +58,11 @@ export default {
 .card-icon {
   font-size: 25px;
   margin-right: 10px;
-  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
 }
-
 .card-title {
   font-weight: 500;
-  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
   font-size: 25px;
   letter-spacing: 1px;
 }
@@ -80,8 +79,8 @@ export default {
 .card-content {
   height: auto;
   background-color: #201f1d;
-  border-bottom-right-radius: 15px;
-  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
   overflow: hidden;
   display: flex;
 }

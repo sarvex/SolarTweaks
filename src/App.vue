@@ -31,20 +31,24 @@ export default {
 
   async mounted() {
     // Setup solartweaks folder
-    const directories = [[], ['solartweaks'], ['solartweaks', 'logs']];
+    const directories = [
+      [],
+      ['solartweaks'],
+      ['solartweaks', 'logs'],
+      ['solartweaks', 'jres'],
+    ];
 
-    for (const directory of directories) {
-      await checkDirectory(join(constants.DOTLUNARCLIENT, ...directory));
-    }
+    await Promise.all(
+      directories.map((directory) =>
+        checkDirectory(join(constants.DOTLUNARCLIENT, ...directory))
+      )
+    );
 
     // Clear logs file because new launch (or reload)
     await clearLogs();
 
     // Settings
     await setupSettings();
-
-    // Auto updater
-    checkForUpdates(); // No await because running in background
 
     if (!navigator.onLine) {
       remote.dialog.showMessageBoxSync({
@@ -58,12 +62,16 @@ export default {
       remote.app.quit();
     }
 
+    // Auto updater
+    checkForUpdates(); // No await because running in background
+
     // Discord RPC
     login();
   },
-
   beforeMount() {
-    console.log(`Settings Loaded at ${settings.file()}`);
+    settings.configure({
+      prettify: true,
+    });
   },
 };
 </script>

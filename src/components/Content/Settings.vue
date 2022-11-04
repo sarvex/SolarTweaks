@@ -23,9 +23,7 @@
               v-bind:key="directory.version"
             >
               <span class="settings-directories-item-version">{{
-                directory.version.length === 3
-                  ? '⠀' + directory.version
-                  : directory.version
+                directory.version
               }}</span>
               <input
                 type="text"
@@ -121,21 +119,23 @@
         >
           <div id="settings-before-launch-container">
             <div class="settings-before-launch">
-              <input
-                type="checkbox"
-                id="settings-skip-checks-input"
-                v-model="skipChecks"
-                @change="updateSkipChecks()"
-              />
-              <span id="settings-debug-mode-text"
-                >Skip checks (game files, JRE, licenses, natives and assets)
-                <span class="settings-debug-mode-warning"
-                  ><i
-                    class="settings-debug-mode-warning fa-solid fa-triangle-exclamation"
-                  ></i>
-                  Warning: Not recommended for Normal Users unless told by a
-                  Developer!</span
-                ></span
+              <div :style="`display: flex; flex-direction: row;`">
+                <input
+                  type="checkbox"
+                  id="settings-skip-checks-input"
+                  v-model="skipChecks"
+                  @change="updateSkipChecks()"
+                />
+                <span id="settings-before-launch-text"
+                  >Skip checks (game files, JRE, licenses, natives and assets)
+                </span>
+              </div>
+              <span class="settings-debug-mode-warning"
+                ><i
+                  class="settings-debug-mode-warning fa-solid fa-triangle-exclamation"
+                ></i>
+                Warning: Not recommended for Normal Users unless told by a
+                Developer!</span
               >
             </div>
           </div>
@@ -693,7 +693,7 @@ export default {
     this.jrePath = await settings.get('jrePath');
     this.debugMode = await settings.get('debugMode');
     this.skipChecks = await settings.get('skipChecks');
-    this.downloadedJres = await settings.get('downloadedJres');
+    this.downloadedJres = (await settings.get('downloadedJres')) ?? [];
 
     if (
       platform() !== 'win32' &&
@@ -728,7 +728,7 @@ export default {
 
 #settings-skip-checks-input {
   height: 20px;
-  width: 60px;
+  width: 25px;
   -webkit-appearance: none;
   background-color: #343434;
   background-image: url('../../assets/icons/checkmark.svg');
@@ -740,12 +740,10 @@ export default {
   border-radius: 5px;
   transition: 0.2s ease;
 }
-
 #settings-skip-checks-input:hover {
   background-color: #303030;
   color: #fff;
 }
-
 #settings-skip-checks-input:checked {
   background-color: #269e4e;
   background-image: url('../../assets/icons/checkmark.svg');
@@ -753,7 +751,6 @@ export default {
   background-blend-mode: normal;
   color: #fff;
 }
-
 .input {
   font-weight: 400;
   height: 10px;
@@ -764,30 +761,26 @@ export default {
   cursor: pointer;
   border-radius: 5px;
 }
-
 .button {
   background-color: #269e4e;
   border: none;
   height: 30px;
   border-radius: 5px;
   cursor: pointer;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
   transition: background-color 0.2s ease-in-out;
 }
-
 .button:hover {
   background-color: #196d35;
 }
-
 .button-icon {
   margin-left: 20px;
   margin-right: 10px;
 }
-
 .button-text {
   font-weight: 400;
   margin-right: 20px;
 }
-
 .slider {
   -webkit-appearance: none;
   width: 100%;
@@ -798,19 +791,21 @@ export default {
   -webkit-transition: 0.2s;
   transition: opacity 0.2s;
 }
-
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #ffffff;
   cursor: pointer;
 }
-
+.slider::-webkit-slider-thumb:active {
+  background: rgb(148, 195, 224);
+  border: 1px solid white;
+  box-shadow: 0 0 0 5px rgba(38, 118, 158, 0.25);
+}
 /* Content */
-
 #settings-container {
   font-weight: 400;
   display: flex;
@@ -818,24 +813,20 @@ export default {
   align-items: center;
   margin-bottom: 75px;
 }
-
 .settings-card {
   font-weight: 500;
   margin-top: 10px;
 }
-
 .settings-card-item {
   font-weight: 300;
   letter-spacing: 0.2px;
   margin: 10px;
   flex: 1 1 0px;
 }
-
 .settings-card-item.settings-card-item-container {
   display: flex;
   flex-direction: column;
 }
-
 #settings-directories {
   margin-top: 20px;
   display: flex;
@@ -843,118 +834,109 @@ export default {
   flex-direction: column;
   justify-content: space-between;
 }
-
 .settings-directories-item {
   display: flex;
   align-items: center;
   margin: 3px;
 }
-
 .settings-directories-item-version {
   font-weight: 400;
   font-size: 15px;
   margin-right: 10px;
 }
-
 .settings-directories-input {
   flex: 1 1 0px;
 }
-
 #directory-reset-button {
   margin-top: 15px;
 }
-
 .directories-card-item {
   display: flex;
   flex-direction: column;
 }
-
 .directories-card-item-content {
   flex: 1 1 0px;
   display: flex;
 }
-
 #settings-ram {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 #settings-ram-slider {
   margin-top: 5px;
   margin-bottom: 20px;
 }
-
 #settings-ram-values-container {
   text-align: center;
 }
-
 #settings-ram-indicator {
   font-size: 10px;
   margin-top: 5px;
   letter-spacing: 1px;
 }
-
 .settings-resolution-title {
   display: flex;
   font-weight: 400;
 }
-
 .settings-resolution-icon {
   font-size: 20px;
   margin-right: 7px;
 }
-
 .settings-resolution-input {
   border: #343434 1px solid;
-  border-radius: 4px;
   background: transparent;
   outline: none;
   width: 75px;
   height: 30px;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.5);
   margin-top: 12px;
   text-align: center;
   font-style: italic;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
 }
-
+.settings-resolution-input:focus {
+  border: 1px solid rgba(38, 118, 158, 1);
+  box-shadow: 0 0 0 2px rgba(38, 118, 158, 0.25);
+}
 .settings-resolution-input::-webkit-outer-spin-button,
 .settings-resolution-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 #settings-resolution {
   display: flex;
   justify-content: center;
   margin-top: 15px;
   height: 69px;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.5);
 }
-
 #settings-resolution-left {
   margin-right: 20px;
   display: flex;
   flex-direction: column;
 }
-
 #settings-resolution-right {
   margin-left: 20px;
   display: flex;
   flex-direction: column;
 }
-
 .settings-before-launch-container {
   display: flex;
   flex-direction: row;
 }
-
 .settings-before-launch {
   margin-top: 7px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  font-size: 15px;
+  font-weight: 300;
+  text-align: left;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.5);
   align-items: center;
+  justify-content: center;
 }
 
 #settings-after-launch {
@@ -964,6 +946,7 @@ export default {
 .settings-after-launch-action {
   width: 100%;
   background-color: #343434;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
   margin-top: 10px;
 }
 
@@ -1107,7 +1090,6 @@ export default {
   background-color: #303030;
   color: #fff;
 }
-
 #settings-debug-mode-input:checked {
   background: #269e4e;
   background-color: #269e4e;
@@ -1117,31 +1099,46 @@ export default {
   background-repeat: no-repeat;
   background-blend-mode: normal;
   color: #fff;
-  color: #fff;
 }
 
 #settings-debug-mode-text {
-  margin-left: 10px;
   margin-top: 7px;
+  margin-left: 10px;
+}
+
+#settings-before-launch-text {
+  margin-left: 10px;
 }
 
 .settings-debug-mode-warning {
-  color: #d0342c;
+  background: #171717;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 5px;
+  margin: 5px 0;
+  letter-spacing: 0.2px;
+  padding: 5px;
+  line-height: 10px;
+  text-align: center;
+  border-radius: 2px;
+  text-transform: uppercase;
+  color: #ba2828;
+}
+
+.settings-debug-mode-warning i {
+  padding: 0 0;
 }
 
 #settings-jre-downloader {
   margin-top: 20px;
   height: 234px;
 }
-
 #jre-settings {
   margin: 0;
 }
-
 .jre-item {
   margin: 10px;
 }
-
 .jre-item-button {
   margin-left: 5px;
   border: none;
@@ -1151,7 +1148,6 @@ export default {
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
-
 .jre-item-button-blue {
   margin-left: 5px;
   border: none;
@@ -1169,40 +1165,32 @@ export default {
   transition: background-color 0.2s ease;
   background-color: #343434;
 }
-
 .jre-item-button.jre-item-button-red {
   background-color: #dd3e3e;
 }
-
 .jre-item-button.jre-item-button-red:hover {
   background-color: #c12c2c;
 }
-
 .jre-item-button.jre-item-button-red:disabled {
   background-color: #343434;
   cursor: not-allowed;
 }
-
 .jre-item-button:hover {
   background-color: #196d35;
 }
-
 .jre-item-button:disabled {
   background-color: #343434;
   cursor: not-allowed;
 }
-
 .jre-item-icon {
   margin-right: 5px;
 }
-
 .jre-item-icon-spinner {
   animation-name: spin;
   animation-duration: 2000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
-
 @keyframes spin {
   from {
     transform: rotate(0deg);

@@ -49,16 +49,16 @@ export default {
 }
 
 .card-item-title {
-  font-weight: 400;
+  font-weight: 500;
+  letter-spacing: 1px;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
   font-size: 20px;
 }
-
 .card-item-subtitle {
   font-weight: 300;
-  font-size: 12px;
-  color: #b5b5b5;
-  letter-spacing: 0.25px;
+  font-size: 11.5px;
+  color: #d1d1d1;
+  letter-spacing: 0.2px;
   margin-top: 5px;
 }
 </style>

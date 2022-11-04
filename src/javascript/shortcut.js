@@ -1,11 +1,12 @@
 import { exec } from 'child_process';
 import { remote } from 'electron';
 import settings from 'electron-settings';
+import { existsSync } from 'fs';
+import { chmod, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import process from 'process';
 import constants from '../constants';
 import store from '../store';
-import fs from './fs';
 import Logger from './logger';
 import { fetchMetadata, getJavaArguments } from './minecraft';
 
@@ -18,8 +19,8 @@ const logger = new Logger('shortcut');
  * @returns {Promise<void>}
  */
 export async function createShortcutWrapper(version, serverIp = null) {
-  if (!(await fs.exists(join(constants.SOLARTWEAKS_DIR, 'wrappers'))))
-    await fs.mkdir(join(constants.SOLARTWEAKS_DIR, 'wrappers'));
+  if (!existsSync(join(constants.SOLARTWEAKS_DIR, 'wrappers')))
+    await mkdir(join(constants.SOLARTWEAKS_DIR, 'wrappers'));
 
   let wrapper = `wrapper-${version}-${serverIp}.`;
   if (process.platform === 'win32') wrapper += 'cmd';
@@ -33,7 +34,7 @@ export async function createShortcutWrapper(version, serverIp = null) {
     'wrappers',
     wrapper
   );
-  if (await fs.exists(wrapperFile)) {
+  if (existsSync(wrapperFile)) {
     logger.debug('Wrapper already exists');
     return [wrapperFile, versionFolder];
   }
@@ -50,10 +51,10 @@ export async function createShortcutWrapper(version, serverIp = null) {
     ' '
   )}`;
 
-  await fs.writeFile(wrapperFile, wrapperData, 'utf8');
+  await writeFile(wrapperFile, wrapperData, 'utf8');
   logger.debug('Wrapper created');
 
-  await fs.chmod(wrapperFile, 0o755);
+  await chmod(wrapperFile, 0o755);
 
   return [wrapperFile, versionFolder];
 }

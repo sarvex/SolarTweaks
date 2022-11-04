@@ -168,11 +168,9 @@ export default {
     /**
      * Fetches data for every servers
      */
-    fetchServers() {
+    async fetchServers() {
       logger.debug('Fetching servers...');
-      this.servers.forEach((server) => {
-        this.fetchServer(server);
-      });
+      await Promise.all(this.servers.map((server) => this.fetchServer(server)));
     },
 
     /**
@@ -228,7 +226,7 @@ export default {
   async mounted() {
     // Loading servers data (Online players, status, etc...)
     await this.loadServers();
-    this.fetchServers();
+    await this.fetchServers();
   },
 };
 </script>

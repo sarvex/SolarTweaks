@@ -53,17 +53,20 @@
       }
     </style>
     <script>
+      document.created = Date.now();
       // The loading animation
       setTimeout(() => {
         document.getElementById('loader-icon').style.width = '150px';
         document.getElementById('loader-icon').style.height = '150px';
         document.getElementById('loader-icon').style.opacity = '1';
       }, 50);
-      // Hide the loading screen after 1,5 seconds
+      // Hide the loading screen after 1.5 seconds
+      /*
       setTimeout(
         () => document.getElementById('loader-container').remove(),
         1500
       );
+      */
     </script>
     <noscript>
       <strong
@@ -74,4 +77,6 @@
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
+  <!-- Vue DevTools -->
+  <script src="http://localhost:8098"></script>
 </html>

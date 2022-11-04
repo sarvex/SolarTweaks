@@ -1,19 +1,20 @@
 import axios from 'axios';
-import { exec, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import { remote } from 'electron';
 import settings from 'electron-settings';
 import extractZip from 'extract-zip';
-import { readFile, stat, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
+import { mkdir, readFile, stat, writeFile } from 'fs/promises';
 import { machineId as _machineId } from 'node-machine-id';
-import { arch, platform } from 'os';
+import { arch as osArch, platform, release } from 'os';
 import { join } from 'path';
 import process from 'process';
+import { v4 as uuidv4, validate as validateUUID } from 'uuid';
 import constants from '../constants';
 import store from '../store';
 import { downloadLunarAssets } from './assets';
 import { disableRPC, login as connectRPC, updateActivity } from './discord';
-import { downloadAndSaveFile } from './downloader';
-import fs from './fs';
+import { checkHash, downloadAndSaveFile } from './downloader';
 import Logger, { createMinecraftLogger } from './logger';
 import { getDotMinecraftDirectory } from './settings';
 
@@ -33,15 +34,14 @@ export async function setupLunarClientDirectory() {
 
   const folders = ['licenses', 'offline'];
 
-  if (!(await fs.exists(constants.DOTLUNARCLIENT))) {
+  if (!existsSync(constants.DOTLUNARCLIENT)) {
     logger.debug('Creating .lunarclient directory...');
-    await fs
-      .mkdir(constants.DOTLUNARCLIENT)
+    await mkdir(constants.DOTLUNARCLIENT)
       .then(() => {
         logger.debug('Created .lunarclient directory');
       })
       .catch((error) => {
-        logger.error("Can't create .lunarclient directory", error);
+        logger.throw("Can't create .lunarclient directory", error);
       });
   }
 
@@ -57,15 +57,14 @@ export async function setupLunarClientDirectory() {
       icon: 'fa-solid fa-folder',
     });
 
-    if (!(await fs.exists(join(constants.DOTLUNARCLIENT, folder)))) {
+    if (!existsSync(join(constants.DOTLUNARCLIENT, folder))) {
       logger.debug(`Creating ${folder} subdirectory...`);
-      await fs
-        .mkdir(join(constants.DOTLUNARCLIENT, folder))
+      await mkdir(join(constants.DOTLUNARCLIENT, folder))
         .then(() => {
           logger.debug(`Created ${folder} subdirectory`);
         })
         .catch((error) => {
-          logger.error(`Can't create ${folder} subdirectory`, error);
+          logger.throw(`Can't create ${folder} subdirectory`, error);
         });
     } else logger.debug(`${folder} subdirectory already exists, skipping...`);
   }
@@ -145,39 +144,44 @@ export async function fetchMetadata(skipLaunchingState = false) {
 
   // Fetch metadata
   logger.info('Fetching metadata...');
-  const [machineId, version, hwid_private, installation_id] = await Promise.all(
-    [
-      await _machineId(),
-      await settings.get('version'),
-      await readFile(
-        join(
-          constants.DOTLUNARCLIENT,
-          'launcher-cache',
-          'hwid-private-do-not-share'
-        )
-      ),
-      await readFile(
-        join(constants.DOTLUNARCLIENT, 'launcher-cache', 'installation-id')
-      ),
-    ]
-  );
-  // Module can be either "lunar" or "neu" for 1.8.9
-  const moduleID = 'lunar';
+  const [
+    hwid,
+    version,
+    hwid_private,
+    installation_id,
+    module,
+    os,
+    os_release,
+    arch,
+  ] = await Promise.all([
+    _machineId(),
+    settings.get('version'),
+    getHWIDPrivate(),
+    getInstallationID(),
+    // All versions have a module called "lunar"
+    // Special modules:
+    // 1.8.9 = neu
+    // 1.16.5, 1.17.1, 1.18.2, 1.19.2 = sodium
+    settings.get('module'),
+    platform(),
+    release(),
+    osArch(),
+  ]);
   return new Promise((resolve, reject) => {
     axios
       .post(
         constants.links.LC_METADATA_ENDPOINT,
         {
-          hwid: machineId,
+          hwid,
           installation_id,
           hwid_private,
-          os: process.platform,
-          os_release: require('os').release(),
-          arch: arch(),
-          version: version,
+          os,
+          os_release,
+          arch,
+          version,
           branch: 'master',
           launch_type: 'OFFLINE',
-          module: moduleID,
+          module,
         },
         { 'Content-Type': 'application/json', 'User-Agent': 'SolarTweaks' }
       )
@@ -186,7 +190,7 @@ export async function fetchMetadata(skipLaunchingState = false) {
         resolve(response.data);
       })
       .catch((error) => {
-        logger.error('Failed to fetch metadata', error);
+        logger.throw('Failed to fetch metadata', error);
         reject(error);
       });
   });
@@ -215,7 +219,7 @@ export async function checkLicenses(metadata) {
       license.file
     );
 
-    if (!(await fs.exists(licensePath))) {
+    if (!existsSync(licensePath)) {
       await downloadAndSaveFile(
         license.url,
         join(constants.DOTLUNARCLIENT, 'licenses', license.file),
@@ -223,7 +227,7 @@ export async function checkLicenses(metadata) {
         license.sha1,
         'sha1'
       ).catch((error) => {
-        logger.error(`Failed to download ${license.file}`, error);
+        logger.throw(`Failed to download ${license.file}`, error);
       });
     }
   }
@@ -235,21 +239,19 @@ export async function checkLicenses(metadata) {
  * @returns {Promise<void>}
  */
 export async function checkGameFiles(metadata) {
-  logger.info(`Checking game files (MC ${await settings.get('version')})...`);
+  logger.info(`Checking Game Files (MC ${await settings.get('version')})...`);
   store.commit('setLaunchingState', {
     title: 'LAUNCHING...',
     message: `CHECKING GAMEFILES (${metadata.launchTypeData.artifacts.length})...`,
     icon: 'fa-solid fa-file',
   });
 
-  if (
-    !(await fs.exists(join(constants.DOTLUNARCLIENT, 'offline', 'multiver')))
-  ) {
-    await fs
-      .mkdir(join(constants.DOTLUNARCLIENT, 'offline', 'multiver'))
-      .catch((error) => {
-        logger.error('Failed to create version folder', error);
-      });
+  if (!existsSync(join(constants.DOTLUNARCLIENT, 'offline', 'multiver'))) {
+    await mkdir(join(constants.DOTLUNARCLIENT, 'offline', 'multiver')).catch(
+      (error) => {
+        logger.throw('Failed to create version folder', error);
+      }
+    );
   }
 
   for (const index in metadata.launchTypeData.artifacts) {
@@ -266,16 +268,22 @@ export async function checkGameFiles(metadata) {
       }`
     );
 
-    if (!(await fs.exists(gameFilePath))) {
+    if (!(await checkHash(gameFilePath, artifact.sha1, 'sha1', true))) {
       await downloadAndSaveFile(
         artifact.url,
-        join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name),
+        gameFilePath,
         'blob',
         artifact.sha1,
-        'sha1'
-      ).catch((error) => {
-        logger.error(`Failed to download ${artifact.name}`, error);
-      });
+        'sha1',
+        true,
+        false
+      )
+        .then(() => {
+          logger.info(`Downloaded ${artifact.name} to ${gameFilePath}`);
+        })
+        .catch((error) => {
+          logger.throw(`Failed to download ${artifact.name}`, error);
+        });
     }
   }
 }
@@ -298,14 +306,14 @@ export async function checkNatives(metadata) {
     (artifact) => artifact.type === 'NATIVES'
   );
   if (
-    await fs.exists(
+    existsSync(
       join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name)
     )
   ) {
     if (
-      !(await fs.exists(
+      !existsSync(
         join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives')
-      ))
+      )
     ) {
       await extractZip(
         join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name),
@@ -317,7 +325,7 @@ export async function checkNatives(metadata) {
           logger.debug('Extracted natives');
         })
         .catch((error) => {
-          logger.error(`Failed to extract natives`, error);
+          logger.throw('Failed to extract natives', error);
         });
     } else {
       logger.debug('Natives already extracted');
@@ -343,8 +351,10 @@ export async function checkPatcher() {
   const release = await axios
     .get(`${constants.API_URL}${constants.UPDATERS.INDEX}`)
     .catch((reason) => {
-      logger.error('Failed to fetch updater index', reason);
+      logger.throw('Failed to fetch updater index', reason);
     });
+
+  if (!release) return;
 
   const patcherPath = join(
     constants.DOTLUNARCLIENT,
@@ -358,17 +368,15 @@ export async function checkPatcher() {
       join(constants.SOLARTWEAKS_DIR, constants.PATCHER.PATCHER)
     ).catch(() => false))
   ) {
-    await Promise.all([
-      await downloadAndSaveFile(
-        `${constants.API_URL}${constants.UPDATERS.PATCHER.replace(
-          '{version}',
-          release.data.index.stable.patcher
-        )}`,
-        patcherPath,
-        'blob'
-      ),
-      await settings.set('patcherVersion', release.data.index.stable.patcher),
-    ]);
+    await downloadAndSaveFile(
+      `${constants.API_URL}${constants.UPDATERS.PATCHER.replace(
+        '{version}',
+        release.data.index.stable.patcher
+      )}`,
+      patcherPath,
+      'blob'
+    );
+    await settings.set('patcherVersion', release.data.index.stable.patcher);
     return; // No need to check for updates, we just downloaded the latest version
   }
 
@@ -400,7 +408,6 @@ export async function checkPatcher() {
     'solartweaks',
     constants.PATCHER.CONFIG
   );
-  const config = await readFile(configPath, 'utf8');
 
   function merge(obj1, obj2) {
     const newObj = { ...obj1, ...obj2 };
@@ -411,7 +418,10 @@ export async function checkPatcher() {
     return newObj;
   }
 
-  const newConfig = merge(defaultConfigFile, JSON.parse(config));
+  const newConfig = merge(
+    defaultConfigFile,
+    JSON.parse(await readFile(configPath, 'utf8'))
+  );
   await writeFile(configPath, JSON.stringify(newConfig, null, 2));
 }
 
@@ -431,7 +441,9 @@ export async function checkPatcherConfig() {
       constants.PATCHER.CONFIG_EXAMPLE_URL,
       configPath,
       'text'
-    ).catch(logger.error);
+    ).catch((err) => {
+      logger.throw('Failed to download default patcher config', err);
+    });
     logger.info('Created default patcher config');
   });
 }
@@ -456,8 +468,8 @@ export async function patchGame() {
   );
 
   logger.debug(`Reading ${filePath}`);
-  const configRaw = await fs.readFile(filePath).catch((reason) => {
-    logger.error('Failed to read config.json', reason);
+  const configRaw = await readFile(filePath).catch((reason) => {
+    logger.throw('Failed to read config.json', reason);
   });
   if (!configRaw) return;
 
@@ -494,13 +506,12 @@ export async function patchGame() {
   });
 
   logger.debug(`Writing ${filePath}`);
-  await fs
-    .writeFile(filePath, JSON.stringify(config, null, 2))
+  await writeFile(filePath, JSON.stringify(config, null, 2))
     .then(() => {
       logger.debug('Successfully wrote config.json');
     })
     .catch((reason) => {
-      logger.error('Failed to write config.json', reason);
+      logger.throw('Failed to write config.json', reason);
     });
 }
 
@@ -534,6 +545,7 @@ export async function getJavaArguments(
 
   const version = overrideVersion ?? (await settings.get('version'));
 
+  // eslint-disable-next-line no-unused-vars
   const lunarJarFile = (filename) =>
     `"${join(constants.DOTLUNARCLIENT, 'offline', 'multiver', filename)}"`;
 
@@ -550,7 +562,7 @@ export async function getJavaArguments(
   );
 
   // Make sure the patcher exists, or else the game will crash (jvm init error)
-  stat(patcherPath)
+  await stat(patcherPath)
     .then(() => {
       args.push(
         `-javaagent:"${patcherPath}"="${join(
@@ -567,15 +579,11 @@ export async function getJavaArguments(
       )
     );
 
-  const classPath = [];
-  metadata.launchTypeData.artifacts
+  const classPath = metadata.launchTypeData.artifacts
     .filter((a) => a.type === 'CLASS_PATH')
-    .forEach((artifact) => {
-      classPath.push(lunarJarFile(artifact.name));
-    });
+    .map((artifact) => artifact.name);
 
-  if (version === '1.7')
-    classPath.push(lunarJarFile('OptiFine_1.7.10_HD_U_E7'));
+  if (version === '1.7.10') classPath.push('OptiFine_1.7.10_HD_U_E7');
 
   const ram = await settings.get('ram');
 
@@ -622,11 +630,11 @@ export async function getJavaArguments(
     '--height',
     resolution.height,
     '--ichorClassPath',
-    classPath.join(),
+    classPath.join(','),
     '--ichorExternalFiles',
     metadata.launchTypeData.artifacts
       .filter((a) => a.type === 'EXTERNAL_FILE')
-      .map((i) => i.name)
+      .map((artifact) => artifact.name)
       .join(','),
     '--workingDirectory',
     '.',
@@ -635,14 +643,61 @@ export async function getJavaArguments(
     '--hwid',
     await _machineId(),
     '--installationId',
-    await readFile(
-      join(constants.DOTLUNARCLIENT, 'launcher-cache', 'installation-id')
-    )
+    await getInstallationID()
   );
 
   if (serverIp) args.push('--server', `"${serverIp}"`);
 
   return args.map((arg) => (!shortcut ? `${arg}`.replace(/"/g, '') : arg));
+}
+/**
+ * Get the HWID Private file from the .lunarclient/launcher-cache folder or make one if it doesn't exist
+ * @returns {Promise<string>} The HWID Private
+ */
+export async function getHWIDPrivate() {
+  const path = join(
+    constants.DOTLUNARCLIENT,
+    'launcher-cache',
+    'hwid-private-do-not-share'
+  );
+  try {
+    return await readFile(path, { encoding: 'utf-8' });
+  } catch {
+    const chars =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let hwid_private = '';
+    for (let i = 0; i < 512; i++)
+      hwid_private += chars.charAt(Math.floor(Math.random() * chars.length));
+    await mkdir(join(constants.DOTLUNARCLIENT, 'launcher-cache'), {
+      recursive: true,
+    });
+    await writeFile(path, hwid_private, { encoding: 'utf-8' });
+    return hwid_private;
+  }
+}
+/**
+ * Get the Installation ID file from the .lunarclient/launcher-cache folder or make one if it doesn't exist
+ * @returns {Promise<string>} The Installation ID
+ */
+export async function getInstallationID() {
+  const path = join(
+    constants.DOTLUNARCLIENT,
+    'launcher-cache',
+    'installation-id'
+  );
+  let installationID;
+  try {
+    installationID = await readFile(path, { encoding: 'utf-8' });
+    if (!validateUUID(installationID))
+      throw new Error('Invalid Installation ID, Regenerating...');
+  } catch {
+    installationID = uuidv4();
+    await mkdir(join(constants.DOTLUNARCLIENT, 'launcher-cache'), {
+      recursive: true,
+    });
+    await writeFile(path, installationID, { encoding: 'utf-8' });
+  }
+  return installationID;
 }
 /**
  * Launch the game
@@ -664,7 +719,7 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
       message: error.message,
       icon: 'fa-solid fa-exclamation-triangle',
     });
-    logger.error('Failed to get Java Arguments.', error);
+    logger.throw('Failed to get Java Arguments', error);
   });
 
   if (!args) return logger.error('No Java Arguments');
@@ -696,46 +751,8 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
   proc.stderr.pipe(minecraftLogger);
 
   if (debug) {
-    const platformPrefixes = {
-      win32: '',
-      darwin: 'open',
-    };
-    const prefix = platformPrefixes[platform()] || '';
-    exec(
-      `${prefix?.length ? prefix + ' ' : ''}"${minecraftLogger.path}"`,
-      (err) => {
-        if (err) logger.error('Error while opening Minecraft Logger', err);
-      }
-    );
-    commitLaunch();
+    await remote.shell.openPath(minecraftLogger.path);
   }
-
-  proc.on('error', (error) => {
-    if (debug) return;
-    logger.error(error);
-  });
-
-  proc.stdout.on('error', (error) => {
-    store.commit('setLaunchingState', {
-      title: `LAUNCH ${version}`,
-      message: 'READY TO LAUNCH',
-      icon: 'fa-solid fa-gamepad',
-    });
-    store.commit('setLaunching', false);
-    if (debug) return;
-    logger.error('Failed to launch game', error);
-  });
-
-  proc.stderr.on('error', (error) => {
-    store.commit('setLaunchingState', {
-      title: `LAUNCH ${version}`,
-      message: 'READY TO LAUNCH',
-      icon: 'fa-solid fa-gamepad',
-    });
-    store.commit('setLaunching', false);
-    if (debug) return;
-    logger.error('Failed to launch game', error);
-  });
 
   proc.stdout.once('end', () => {
     store.commit('setLaunchingState', {
@@ -750,6 +767,7 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
   });
 
   proc.stdout.once('data', async (/* data */) => {
+    setTimeout(commitLaunch, 2500);
     if (debug) return;
     await disableRPC();
     switch (await settings.get('actionAfterLaunch')) {
@@ -763,137 +781,88 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
       case 'keep':
         break;
     }
-    await new Promise((res) => setTimeout(res, 1500));
-    commitLaunch();
   });
+
+  proc.on('error', (error) => logger.error(error));
+
+  proc.stdout.on('error', (error) =>
+    logger.throw('Failed to launch game', error)
+  );
+
+  proc.stderr.on('error', (error) =>
+    logger.throw('Failed to launch game', error)
+  );
 }
 
 /**
  * Run all the checks and launch the game
  * @param {string} [serverIp=null] Server IP to connect to
  */
-// eslint-disable-next-line no-unused-vars
 export async function checkAndLaunch(serverIp = null) {
   store.commit('setLaunching', true);
   updateActivity('In the launcher', 'Launching game');
 
-  // Fetching metadata
-  const metadata = await fetchMetadata().catch((error) => {
+  let success = true;
+
+  function error(action, err) {
     store.commit('setLaunchingState', {
-      title: 'Error',
-      message: error.message,
+      title: action + 'Error',
+      message: err.message,
       icon: 'fa-solid fa-exclamation-triangle',
     });
-    logger.error('Failed to Fetch Metadata.', error);
-  });
+    success = false;
+    logger.throw(`Failed to ${action}`, err);
+  }
+
+  // Fetching metadata
+  const metadata = await fetchMetadata().catch((err) =>
+    error('Fetch Metadata', err)
+  );
 
   if (!metadata) return logger.error('No Metadata for Launch');
 
   if (!(await settings.get('skipChecks'))) {
     // Check JRE
-    await checkJRE().catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Check JRE.', error);
-    });
+    await checkJRE().catch((err) => error('Check JRE', err));
 
     // Check game directory
-    await setupLunarClientDirectory().catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Setup Lunar Client Directory.', error);
-    });
+    await setupLunarClientDirectory().catch((err) =>
+      error('Setup .lunarclient', err)
+    );
 
     // Check licenses
-    await checkLicenses(metadata).catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Check Licenses.', error);
-    });
+    await checkLicenses(metadata).catch((err) => error('Check Licenses', err));
 
     // Check game files
-    await checkGameFiles(metadata).catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Check Game Files.', error);
-    });
+    await checkGameFiles(metadata).catch((err) =>
+      error('Check Game Files', err)
+    );
 
     // Check natives
-    await checkNatives(metadata).catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Check Natives.', error);
-    });
+    await checkNatives(metadata).catch((err) => error('Check Natives', err));
 
     // Check LC assets
-    await downloadLunarAssets(metadata).catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Check LC Assets.', error);
-    });
+    await downloadLunarAssets(metadata).catch((err) =>
+      error('Check LC Assets', err)
+    );
 
     // Check patcher
-    await checkPatcher().catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to check patcher, skipping patcher check.', error);
-    });
+    await checkPatcher().catch((err) => error('Check Patcher', err));
 
     // Patcher config
-    await checkPatcherConfig().catch((error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error(
-        'Failed to check patcher config, is GitHub down? Have we messed up while publishing the release? Skipping patcher check.',
-        error
-      );
-    });
+    await checkPatcherConfig().catch((err) =>
+      error('Check Patcher Config', err)
+    );
   }
 
   // Update patcher config file
-  await patchGame().catch((error) => {
-    store.commit('setLaunchingState', {
-      title: 'Error',
-      message: error.message,
-      icon: 'fa-solid fa-exclamation-triangle',
-    });
-    logger.error('Failed to Patch Game.', error);
-  });
+  await patchGame().catch((err) => error('Patch Game', err));
+
+  if (!success) return;
 
   // Launch game
   await launchGame(metadata, serverIp, await settings.get('debugMode')).catch(
-    (error) => {
-      store.commit('setLaunchingState', {
-        title: 'Error',
-        message: error.message,
-        icon: 'fa-solid fa-exclamation-triangle',
-      });
-      logger.error('Failed to Launch Game.', error);
-    }
+    (err) => error('Launch Game', err)
   );
 
   // Trackers

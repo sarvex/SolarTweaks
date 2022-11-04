@@ -21,7 +21,7 @@ When you launch the app, you will be welcomed by a user interface similar to the
 
 ⚠️ **Please note that Solar Tweaks is not a replacement for Lunar Client. Solar Tweaks is a modification tool for Lunar Client**
 
-Tweak and customize your game by going to the **Customize** tab, change the launcher and JRE preferences in the **Settings** tab and launch the game using any tab you want since the big green button is always there.
+Tweak and customize your game by going to the **Patcher** tab, change the launcher and JRE preferences in the **Settings** tab and launch the game using any tab you want since the big green button is always there.
 
 # Building from source 🏗️
 

@@ -55,39 +55,7 @@ export default {
   name: 'Home',
 
   data: () => ({
-    posts: [
-      {
-        imageUrl:
-          'https://i.ibb.co/2g8VFGq/Discord-IAP-Key-Visuals-Header-02.jpg',
-        description:
-          'Hey guys! Our server got deleted so we created a new one! Learn more about the new features, and the new ecosystem we created!',
-        author: 'Cy0ze',
-        avatarUrl: 'https://cravatar.eu/avatar/Cy0ze',
-        url: 'https://discord.gg/SolarTweaks',
-        button: {
-          text: 'Join server',
-          icon: 'fa-brands fa-discord',
-        },
-      },
-      {
-        imageUrl:
-          'https://launcherimages.lunarclientcdn.com/blogs/vday2022.f46a89d7b7.webp',
-        description:
-          'Happy Valentines Day! Take advantage of our new limited-edition Valentines 2022 cosmetics that are currently 15% off.',
-        author: 'Physci',
-        avatarUrl: 'https://cravatar.eu/avatar/Physci',
-        url: 'https://store.lunarclient.com/',
-      },
-      {
-        imageUrl:
-          'https://launcherimages.lunarclientcdn.com/blogs/hypixelpartner.c0b01ee98c.webp',
-        description:
-          'Lunar Client has been added to the Hypixel Creator Program. You can now use code “LUNAR” when checking out on the Hypixel Network Store!',
-        author: 'Physci',
-        avatarUrl: 'https://cravatar.eu/avatar/Physci',
-        url: 'https://www.lunarclient.com/news/lunar-client-x-hypixel-network/?utm_source=launcher&utm_medium=blog-post&utm_campaign=lead',
-      },
-    ],
+    posts: [],
   }),
 
   methods: {
@@ -100,21 +68,41 @@ export default {
     },
   },
 
-  beforeMount() {
+  async beforeMount() {
     if (cache.has('blogPosts')) return (this.posts = cache.get('blogPosts'));
 
-    axios
+    await axios
       .get(`${constants.API_URL}/launcher/blogPosts`)
       .then((response) => {
+        logger.info(`Fetched Solar Tweaks Blog Posts`, response.data);
         this.posts = response.data;
-        cache.set('blogPosts', this.posts);
-      })
-      .catch(() => {
-        logger.warn(
-          'Failed to fetch blog posts, falling back to hardcoded data...'
-        );
-        cache.set('blogPosts', this.posts);
       });
+    await axios
+      .get('https://api.lunarclientprod.com/launcher/metadata')
+      .then(({ data: { blogPosts } }) => {
+        logger.info(`Fetched Lunar Client Blog Posts`, blogPosts);
+        const lcPosts = blogPosts.map((blog) => {
+          let post = {
+            description: blog.excerpt,
+            imageUrl: blog.image,
+            avatarUrl: `https://cravatar.eu/avatar/${blog.author}`,
+            author: blog.author,
+            lunar: true,
+          };
+          if (blog.link) {
+            post.url = blog.link;
+            post.button = { text: 'Read more', icon: 'fa fa-book' };
+          }
+          return post;
+        });
+        if (this.posts.length)
+          this.posts = this.posts.map((post) => {
+            if (post.lunar) return lcPosts.splice(0, 1)[0];
+            else return post;
+          });
+        else this.posts = lcPosts.slice(0, 3);
+      });
+    cache.set('blogPosts', this.posts);
   },
 };
 </script>
@@ -125,25 +113,25 @@ export default {
   letter-spacing: 3px;
   line-height: 1.2;
   text-align: center;
-  margin-top: 10px;
+  font-weight: 500;
+  margin-top: 20px;
 }
-
 #posts-container {
   margin-top: 15px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  padding-bottom: 5%;
 }
-
 .post-container {
   background-color: #201f1d;
   width: 400px;
-  height: 260px;
+  height: 250px;
   border-radius: 5px;
   margin-left: 6px;
   margin-right: 6px;
   transition: transform 0.4s ease;
 }
-
 .post-image-container {
   width: 400px;
   height: 170px;
@@ -151,18 +139,16 @@ export default {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
 }
-
 .post-image {
   object-fit: cover;
+  backface-visibility: hidden;
   transition: transform 0.4s ease;
 }
-
 .post-container:hover .post-image {
-  transform: scale(1.1);
+  transform: perspective(1px) scale(1.1);
 }
-
 .post-description {
-  font-size: small;
+  font-size: 0.8rem;
   font-weight: 400;
   letter-spacing: 0.2px;
   line-height: 1.5;
@@ -173,53 +159,50 @@ export default {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
+  color: #dadada;
   -webkit-box-orient: vertical;
-  margin-top: 4px;
+  margin-top: 5px;
+  font-smooth: antialiased;
+  -webkit-font-smoothing: antialiased;
 }
-
 #post-bottom-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  margin-top: 0px;
 }
-
 .post-author-container {
   margin-left: 5px;
   margin-right: 5px;
-  margin-top: 15px;
+  margin-top: 5px;
 }
-
 .post-author-avatar {
   width: 16px;
   height: 16px;
-  margin: 0 2px;
+  margin: 0 3px;
   vertical-align: text-bottom;
 }
-
 .post-author {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
 }
-
 .post-button {
   background-color: #2b71ce;
   border: none;
-  padding: 0px 10px;
+  padding: 0px 6px;
   font-weight: 400;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
   height: 25px;
-  border-radius: 5px;
-  margin-top: 12px;
+  border-radius: 3px;
+  margin-top: 6px;
   margin-right: 5px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.35s ease;
 }
-
 .post-button:hover {
-  background-color: #2b71ce;
+  background-color: #0b51ae;
 }
-
 .post-btn-text {
-  margin-left: 3px;
+  margin-left: 5px;
 }
 </style>

@@ -1,12 +1,13 @@
 import { exec } from 'child_process';
 import extract from 'extract-zip';
-import { move, pathExists } from 'fs-extra';
-import fs from 'fs/promises';
+import { existsSync } from 'fs';
+import { mkdir, readdir, rm, rmdir } from 'fs/promises';
 import { arch, platform } from 'os';
 import { join } from 'path';
 import constants from '../constants';
 import { downloadAndSaveFile } from './downloader';
 import Logger from './logger';
+import { move } from 'fs-extra';
 const logger = new Logger('jreDownloader');
 
 /**
@@ -44,14 +45,14 @@ export async function downloadJre(_jre) {
   }
 
   if (!jre) {
-    logger.error(`Failed to get JRE from JREs List for ${_jre.name}`);
+    logger.throw(`Failed to get JRE from JREs List for ${_jre.name}`);
     return false;
   }
 
   const jresPath = join(constants.SOLARTWEAKS_DIR, 'jres');
   const jrePath = join(jresPath, _jre.name);
 
-  await fs.mkdir(jresPath).catch(() => {
+  await mkdir(jresPath).catch(() => {
     // Folder already exists, do nothing
   });
 
@@ -65,23 +66,25 @@ export async function downloadJre(_jre) {
     true
   );
 
-  await fs.rmdir(jrePath).catch(() => {
+  await rmdir(jrePath).catch(() => {
     // Folder doesn't exist, do nothing
   });
-  await fs.rmdir(jrePath + '_temp').catch(() => {
+  await rmdir(jrePath + '_temp').catch(() => {
     // Folder doesn't exist, do nothing
   });
 
   if (jre.tar) {
     await new Promise((res) =>
-      fs
-        .mkdir(jrePath + '_temp')
+      mkdir(jrePath + '_temp')
         .then(res)
-        .catch(() =>
-          res(
-            logger.warn('JRE Temp Path already exists, might cause issues...')
-          )
-        )
+        .catch(async () => {
+          logger.info('JRE Temp Path already exists, clearing...');
+          for (const file of await readdir(jrePath + '_temp')) {
+            await rm(join(jrePath + '_temp', file), {
+              recursive: true,
+            });
+          }
+        })
     );
     if (
       !(await new Promise((res) =>
@@ -89,8 +92,8 @@ export async function downloadJre(_jre) {
           `tar -xzvf ${jrePath}.tar.gz -C ${jrePath + '_temp'}`,
           async (err) => {
             if (err) {
-              logger.error(`Failed to extract ${jrePath}.tar.gz`, err);
-              await fs.rm(`${jrePath}.tar.gz`);
+              logger.throw(`Failed to extract ${jrePath}.tar.gz`, err);
+              await rm(`${jrePath}.tar.gz`);
               return res(false);
             }
             res(true);
@@ -105,8 +108,8 @@ export async function downloadJre(_jre) {
         extract(`${jrePath}.zip`, { dir: jrePath + '_temp' })
           .then(() => res(true))
           .catch(async (err) => {
-            logger.error(`Failed to extract ${jrePath}.zip`, err);
-            await fs.rm(`${jrePath}.zip`);
+            logger.throw(`Failed to extract ${jrePath}.zip`, err);
+            await rm(`${jrePath}.zip`);
             res(false);
           })
       ))
@@ -114,25 +117,24 @@ export async function downloadJre(_jre) {
       return false;
   }
 
-  let jreFolder =
-    (await fs.readdir(join(jrePath + '_temp')))?.[0] || jre.folder;
+  let jreFolder = (await readdir(join(jrePath + '_temp')))?.[0] || jre.folder;
   if (!jreFolder) {
     logger.error(
       `Failed to find JRE directory in \`.lunarclient/solartweaks/jres/${jrePath}_temp\``
     );
-    await fs.rmdir(jrePath + '_temp', {
+    await rmdir(jrePath + '_temp', {
       recursive: true,
     });
-    await fs.rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
+    await rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
     return false;
   }
-  if (await pathExists(join(jrePath + '_temp', jreFolder, 'Contents')))
+  if (existsSync(join(jrePath + '_temp', jreFolder, 'Contents')))
     jreFolder = join(jreFolder, '/Contents/Home');
   await move(join(jrePath + '_temp', jreFolder), jrePath, { overwrite: true });
-  await fs.rmdir(jrePath + '_temp', {
+  await rmdir(jrePath + '_temp', {
     recursive: true,
   });
-  await fs.rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
+  await rm(`${jrePath}.${jre.tar ? 'tar.gz' : 'zip'}`);
 
   return true;
 }
@@ -141,7 +143,7 @@ export async function downloadJre(_jre) {
  * Delete a downloaded JRE
  */
 export async function removeJre(jreName) {
-  await fs.rm(join(constants.SOLARTWEAKS_DIR, 'jres', jreName), {
+  await rm(join(constants.SOLARTWEAKS_DIR, 'jres', jreName), {
     recursive: true,
     force: true,
   });

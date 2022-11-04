@@ -20,7 +20,7 @@ export async function checkForUpdates() {
   const release = await axios
     .get(`${constants.API_URL}${constants.UPDATERS.INDEX}`)
     .catch((reason) => {
-      logger.error('Failed to fetch updater index', reason);
+      logger.throw('Failed to fetch updater index', reason);
     });
 
   const launcherVer = parseInt(remote.app.getVersion().replace(/[^0-9]+/g, ''));

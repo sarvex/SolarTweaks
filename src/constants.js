@@ -28,4 +28,6 @@ export default {
   },
   DOTLUNARCLIENT: join(homedir(), '.lunarclient'),
   SOLARTWEAKS_DIR: join(homedir(), '.lunarclient', 'solartweaks'),
+  SENTRY:
+    'https://33bba07610344830abca3221280a1499@o4504068582866944.ingest.sentry.io/4504068606328832',
 };

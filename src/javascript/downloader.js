@@ -1,10 +1,10 @@
 import { createHash } from 'crypto';
 import axios from 'axios';
-import fs from 'fs/promises';
-import { createWriteStream } from 'fs';
+import { createWriteStream, existsSync } from 'fs';
 // import { DownloaderHelper } from 'node-downloader-helper';
 
 import Logger from './logger';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 const logger = new Logger('downloader');
 
 /**
@@ -12,7 +12,7 @@ const logger = new Logger('downloader');
  * @param {string} url URL of the file to download
  * @param {string} path Path where to save the file
  * @param {'text'|'blob'} fileType Type of the file to download
- * @param {string} [hash=null] SHA1 hash of the file to make sure it's the same
+ * @param {string} [hash=null] SHA1 or SHA256 hash of the file to make sure it's the same
  * @param {'sha1'|'sha256'} [algorithm='sha1'] Hash algorithm to use
  * @param {boolean} [logging=true] Whether or not to log
  * @param {boolean} [skipFolderCheck=false] Whether or not to check if the folder exists
@@ -26,7 +26,7 @@ export async function downloadAndSaveFile(
   logging = true,
   skipFolderCheck = false
 ) {
-  logger.info(`Downloading ${url}...`);
+  if (logging) logger.info(`Downloading ${url}...`);
 
   const response = await axios.get(url, { responseType: fileType });
 
@@ -39,13 +39,13 @@ export async function downloadAndSaveFile(
     const folderPath = path.includes('\\')
       ? path.substring(0, path.lastIndexOf('\\'))
       : path.substring(0, path.lastIndexOf('/'));
-    await fs.mkdir(folderPath, {
+    await mkdir(folderPath, {
       recursive: true,
     });
   }
 
   if (fileType === 'text') {
-    await fs.writeFile(
+    await writeFile(
       path,
       typeof response.data === 'object'
         ? JSON.stringify(response.data)
@@ -89,7 +89,9 @@ export async function downloadAndSaveFile(
 export async function checkHash(path, hash, algorithm, logging = true) {
   if (logging) logger.debug(`Checking hash of ${path}...`);
 
-  const fileBuffer = await fs.readFile(path);
+  if (!existsSync(path)) return false;
+
+  const fileBuffer = await readFile(path);
   const hashSum = createHash(algorithm);
   hashSum.update(fileBuffer);
   const fileHash = hashSum.digest('hex');

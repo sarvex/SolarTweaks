@@ -1,5 +1,6 @@
+import { captureException } from '@sentry/vue';
 import { createWriteStream } from 'fs';
-import fs from 'fs/promises';
+import { appendFile, unlink, writeFile } from 'fs/promises';
 import { join } from 'path';
 import constants from '../constants';
 
@@ -35,13 +36,18 @@ export default class Logger {
     this.logger.error(x, ...args);
     this.writeLog(`[ERROR] ${x} ${[...args].join(' ')}`);
   }
+  throw(problem, err) {
+    const error = err instanceof Error ? err : new Error(err);
+    this.error(problem, error);
+    captureException(new Error(`${problem.trim()}: ${error}`));
+  }
 
   /**
    * Write log to file
    * @param {any} log
    */
   async writeLog(log) {
-    await fs.appendFile(
+    await appendFile(
       join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
       `${log}\n`
     );
@@ -55,7 +61,7 @@ export async function createMinecraftLogger(version) {
     `${version}-latest.log`
   );
 
-  await fs.writeFile(logFile, ''); // Clear the file and creates it if it doesn't exist
+  await writeFile(logFile, ''); // Clear the file and creates it if it doesn't exist
 
   return createWriteStream(logFile, { encoding: 'utf8' });
 }
@@ -65,11 +71,11 @@ export async function createMinecraftLogger(version) {
  */
 export async function clearLogs() {
   // Delete old log file for cleaning purposes
-  await fs
-    .unlink(join(constants.SOLARTWEAKS_DIR, 'logs', 'latest.log'))
-    .catch(() => {});
+  await unlink(join(constants.SOLARTWEAKS_DIR, 'logs', 'latest.log')).catch(
+    () => {}
+  );
 
-  await fs.writeFile(
+  await writeFile(
     join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
     ''
   );

@@ -70,10 +70,14 @@ export default {
 <style scoped>
 .input {
   width: 250px;
-  height: 10px;
-  background-color: #171717;
+  height: 30px;
+  background-color: #0f0f0f;
   border: none;
+  color: #505050;
+  font-weight: 600;
   outline: none;
+  text-align: center;
+  font-size: 15px;
   padding: 8px;
   margin: 10px;
   border-radius: 4px;
@@ -85,11 +89,18 @@ select {
   padding: 5px 35px 5px 5px;
   font-size: 12px;
   border: none;
+  text-align: center;
   border-radius: 4px;
   outline: none;
-  height: 30px;
+  height: 40px;
   appearance: none;
-  background-color: #171717;
+  background-color: #0f0f0f;
+}
+
+span {
+  color: #c8c8c8;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  font-size: 0.85rem;
 }
 
 #shortcut-container {
@@ -107,8 +118,11 @@ select {
 
 #shortcut-form {
   position: fixed;
-  background-color: #232324;
-  border: 3px solid #30323456;
+    background: linear-gradient(to top, #0e0e0ebd, #151515),
+    url('.././assets/cards-backgrounds/settings-1.png');
+  background-size: cover;
+  background-position: center;
+  border: 2px #1f1f1f solid;
   height: fit-content;
   padding: 25px;
   z-index: 100;
@@ -121,6 +135,10 @@ select {
 }
 
 #shortcut-form-title {
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
   margin-bottom: 15px;
 }
 
@@ -134,11 +152,10 @@ select {
 .button {
   background-color: #1f1f1f;
   width: 150px;
-  height: 35px;
+  height: 40px;
   border: none;
-  box-shadow: 0 0 0 2px #2b2b2b;
   border-radius: 3px;
-  transition: background-color 0.5s ease-out;
+  text-shadow: 0 1px 0 #000000cc;
   font-size: 18px;
   cursor: pointer;
 }
@@ -149,17 +166,19 @@ select {
 
 #button-cancel {
   margin-right: 200px;
+  background-color: #a22143;
 }
 
 #button-save {
   margin-left: 200px;
+  background-color: #269d5f;
 }
 
 #button-cancel:hover {
-  background-color: #a22143;
+  background-color: #7e1934;
 }
 
 #button-save:hover {
-  background-color: #269d5f;
+  background-color: #1e7d4c;
 }
 </style>

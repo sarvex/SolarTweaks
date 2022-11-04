@@ -1,9 +1,10 @@
 import { checkHash, downloadAndSaveFile } from './downloader';
 import { join } from 'path';
-import fs from './fs';
 import store from '../store';
 import Logger from './logger';
 import constants from '../constants';
+import { existsSync } from 'fs';
+import { mkdir, readFile } from 'fs/promises';
 
 const logger = new Logger('launcher');
 
@@ -15,45 +16,38 @@ const logger = new Logger('launcher');
  * @returns {Promise<void>}
  */
 async function checkAsset(metadata, data, index) {
-  return new Promise((resolve) => {
-    const asset = data.split('\n')[index];
-    if (!/[0-9a-f]{40}/.test(asset.split(' ')[1].toLowerCase())) {
-      logger.warn(`Invalid line in index file (line ${index + 1})\n${asset}`);
-      return;
-    }
+  const asset = data.split('\n')[index];
+  if (!/[0-9a-f]{40}/.test(asset.split(' ')[1].toLowerCase())) {
+    logger.warn(`Invalid line in index file (line ${index + 1})\n${asset}`);
+    return;
+  }
 
-    const path = join(
-      constants.DOTLUNARCLIENT,
-      'textures',
-      asset.split(' ')[0]
+  const path = join(constants.DOTLUNARCLIENT, 'textures', asset.split(' ')[0]);
+  const sha1 = asset.split(' ')[1].toLowerCase();
+
+  const exists = existsSync(path);
+  if (exists) {
+    const match = await checkHash(path, sha1, 'sha1', false);
+    if (match) return;
+    else
+      await downloadAndSaveFile(
+        metadata.textures.baseUrl + sha1,
+        path,
+        'blob',
+        sha1,
+        'sha1',
+        false
+      );
+  } else {
+    await downloadAndSaveFile(
+      metadata.textures.baseUrl + sha1,
+      path,
+      'blob',
+      sha1,
+      'sha1',
+      false
     );
-    const sha1 = asset.split(' ')[1].toLowerCase();
-
-    fs.exists(path).then(async (exists) => {
-      if (exists) {
-        const match = await checkHash(path, sha1, 'sha1', false);
-        if (match) resolve();
-        else
-          await downloadAndSaveFile(
-            metadata.textures.baseUrl + sha1,
-            path,
-            'blob',
-            sha1,
-            'sha1',
-            false
-          ).then(() => resolve);
-      } else {
-        await downloadAndSaveFile(
-          metadata.textures.baseUrl + sha1,
-          path,
-          'blob',
-          sha1,
-          'sha1',
-          false
-        ).then(() => resolve);
-      }
-    });
-  });
+  }
 }
 
 /**
@@ -80,7 +74,7 @@ export async function downloadLunarAssets(metadata) {
         true
       )
         .then(async () => {
-          const data = await fs.readFile(indexPath, 'utf8');
+          const data = await readFile(indexPath, 'utf8');
           const assets = data.split('\n');
           logger.info(`Checking ${assets.length} Total Assets`);
           while (assets.length) {
@@ -97,7 +91,7 @@ export async function downloadLunarAssets(metadata) {
         })
         .catch(reject);
     };
-    fs.mkdir(join(constants.DOTLUNARCLIENT, 'textures'))
+    mkdir(join(constants.DOTLUNARCLIENT, 'textures'))
       .then(() => {
         postFolderCheck(resolve, reject);
       })

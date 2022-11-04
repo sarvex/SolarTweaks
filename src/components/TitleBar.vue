@@ -113,7 +113,10 @@ export default {
       );
     },
   },
-
+  beforeMount() {
+    // if (!remote.app.isPackaged)
+    //   this.links.push({ name: 'Debug', active: false });
+  },
   mounted() {
     // Set the active tab to the store's active tab
     this.links.find(
@@ -182,7 +185,7 @@ export default {
   height: 40px;
   border: none;
   box-shadow: 0 0 0 2px transparent;
-  transition: background-color 0.20s ease, box-shadow 0.20s ease;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
   font-size: 16px;
   letter-spacing: 0px;
   font-weight: normal;

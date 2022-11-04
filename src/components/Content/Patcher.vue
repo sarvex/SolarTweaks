@@ -6,17 +6,19 @@
   ></div>
   <div id="options-container" v-if="customizing.open">
     <div id="options-title-container">
-      <img
-        :src="require('../../assets/icons/' + customizing.customization.icon)"
-        id="options-icon"
-        :alt="`${customizing.customization.name} Image`"
-      />
-      <h1 id="options-title">{{ customizing.customization.name }}</h1>
+      <div class="options-title-section">
+        <img
+          :src="require('../../assets/icons/' + customizing.customization.icon)"
+          id="options-icon"
+          :alt="`${customizing.customization.name} Image`"
+        />
+        <h1 id="options-title">{{ customizing.customization.name }}</h1>
+      </div>
+      <h3 id="options-label">
+        {{ customizing.customization.description }}
+      </h3>
     </div>
     <div id="options-content">
-      <h3 id="options-label">
-        Inside the black inputs you must add custom values.
-      </h3>
       <div
         v-for="(value, name) in customizing.customization.values"
         v-bind:key="name"
@@ -40,6 +42,7 @@
       class="customization-container"
       v-for="customization in customizations"
       v-bind:key="customization.name"
+      :description="customization.description"
     >
       <div class="customization-icon-container">
         <img
@@ -80,6 +83,7 @@ export default {
   name: 'Patcher',
 
   data: () => ({
+    /** @type {{name: string, description: string, icon: string, internal: string, call?: string, enabled: boolean}[]} */
     customizations: [
       {
         name: 'Freelook & AutoTextHotKey',
@@ -87,6 +91,7 @@ export default {
         internal: 'metadata',
         call: 'modSettings',
         enabled: false,
+        description: 'Enable Freelook and AutoTextHotKey on Hypixel',
       },
       {
         name: 'Remove Pinned Servers',
@@ -94,6 +99,7 @@ export default {
         internal: 'metadata',
         call: 'pinnedServers',
         enabled: false,
+        description: 'Remove built-in pinned servers on Lunar Client',
       },
       {
         name: 'Remove Blog Posts',
@@ -101,18 +107,22 @@ export default {
         internal: 'metadata',
         call: 'blogPosts',
         enabled: false,
+        description: 'Removes Blog Posts in game',
       },
       {
         name: 'Cloaks+',
         icon: 'cloaks.png',
         internal: 'cloaksPlus',
         enabled: true,
+        description:
+          'Allows you to use Cloaks+ capes and cosmetics on Lunar client < 1.8 without their loader',
       },
       {
         name: 'Remove Mods Packet',
         icon: 'cog.png',
         internal: 'modpacketRemoval',
         enabled: false,
+        description: 'Prevent servers from disabling mods',
       },
       {
         name: 'Nick Hider',
@@ -122,12 +132,15 @@ export default {
           to: 'You',
         },
         enabled: false,
+        description:
+          'Allows you to change your own IGN, but only you can see it (you can also use colors!)',
       },
       {
         name: 'Lunar Overlays',
         icon: 'themes.png',
         internal: 'supportOverlays',
         enabled: true,
+        description: 'Re-enables the ability to use Lunar Client Overlays.',
       },
       {
         name: 'Reach Text',
@@ -137,12 +150,15 @@ export default {
           to: 'blocks',
         },
         enabled: false,
+        description:
+          'Change the Reach Text suffix, eg: 2 blocks, 2 meters, 2 orphans',
       },
       {
         name: 'Uncap Reach Display',
         icon: 'hit_delay.png',
         internal: 'uncapReach',
         enabled: false,
+        description: 'Fix reach display in creative mode',
       },
       {
         name: 'Discord RPC',
@@ -157,24 +173,32 @@ export default {
           singlePlayerText: 'Playing Singleplayer',
         },
         enabled: true,
+        description:
+          "Show what you're doing inside Solar Tweaks in your Discord Rich Presence",
       },
       {
         name: 'Remove Fake Level Head',
         icon: 'hypixel.png',
         internal: 'removeFakeLevelhead',
         enabled: false,
+        description:
+          'Removes the feature on Lunar which assigns nicked players a random level in their LevelHead',
       },
       {
         name: 'Fix Ping Sound',
         icon: 'pings.png',
         internal: 'fixPings',
         enabled: false,
+        description:
+          'Fixes the chat mod "Play sound on mention" system to only respond to actual chat messages, not action bars',
       },
       {
         name: 'Remove Hit Delay',
         icon: 'hit_delay.png',
         internal: 'noHitDelay',
         enabled: false,
+        description:
+          "Makes sure the client doesn't prevent swing/attack packets being sent for no reason",
       },
       {
         name: 'Window Title',
@@ -184,6 +208,8 @@ export default {
           to: 'Lunar Client (Modded by Solar Tweaks)',
         },
         enabled: true,
+        description:
+          'Change the name of the Lunar Client Window (NOTE: If you are planning to inject cheats into your game, turn this module off)',
       },
       {
         name: 'Privacy',
@@ -191,6 +217,8 @@ export default {
         internal: 'websocketPrivacy',
         privacyModules: ['tasklistPrivacy', 'hostslistPrivacy'],
         enabled: false,
+        description:
+          'Prevent Lunar Client from sending data about your computer to their servers',
       },
       {
         name: 'Level Head',
@@ -200,6 +228,7 @@ export default {
           to: 'Level',
         },
         enabled: false,
+        description: 'Change the levelhead prefix',
       },
       {
         name: 'Toggle Sprint Texts',
@@ -215,6 +244,7 @@ export default {
         },
         special: 'toggleSprintText',
         enabled: false,
+        description: 'Change the text that toggle sprint says',
       },
       {
         name: 'FPS Spoof',
@@ -224,6 +254,7 @@ export default {
           multiplier: 2.0,
         },
         enabled: false,
+        description: 'Multiply your FPS counter',
       },
       {
         name: 'FPS',
@@ -233,6 +264,7 @@ export default {
           to: 'FPS',
         },
         enabled: false,
+        description: 'Change the FPS Text',
       },
       {
         name: 'CPS',
@@ -242,6 +274,7 @@ export default {
           to: 'CPS',
         },
         enabled: false,
+        description: 'Change the CPS Text',
       },
       {
         name: 'Auto GG',
@@ -251,24 +284,31 @@ export default {
           to: '/achat gg',
         },
         enabled: false,
+        description:
+          'Change the command sent by auto gg at the end of every game',
       },
       {
         name: 'Remove hashing',
         icon: 'hash.png',
         internal: 'removeHashing',
         enabled: false,
+        description:
+          'Speed up the loading of Lunar Client on lower end computers',
       },
       {
         name: 'Options in Singleplayer',
         icon: 'cog.png',
         internal: 'lunarOptions',
         enabled: false,
+        description:
+          'Removes the Open to LAN button and replaces it with the Lunar Options button',
       },
       {
         name: 'Toggle Sneak in Container',
         icon: 'toggle_sprint.png',
         internal: 'toggleSneakContainer',
         enabled: false,
+        description: 'Allows you to use toggle sneak while in a container',
       },
       {
         name: 'Change ping text',
@@ -278,6 +318,7 @@ export default {
           to: 'ms',
         },
         enabled: false,
+        description: 'Change the text of the ping mod',
       },
       {
         name: 'Change ping value',
@@ -287,12 +328,15 @@ export default {
           pingValue: '100',
         },
         enabled: false,
+        description: 'Change the text of the ping mod',
       },
       {
         name: 'Always render cloth cloaks',
         icon: 'cloak.png',
         internal: 'clothCapes',
         enabled: false,
+        description:
+          'Enables cloth capes for all capes on all players (only for you)',
       },
       {
         name: 'Adjust hurt cam',
@@ -302,6 +346,7 @@ export default {
           multiplier: 0.3,
         },
         enabled: false,
+        description: 'Change the hurt cam shake effect multiplier',
       },
       {
         name: 'Remove chat limit',
@@ -311,18 +356,21 @@ export default {
           limit: 255,
         },
         enabled: false,
+        description: 'Set the maximum chat limit count to a preset value',
       },
       {
         name: 'Remove Lunar chat cooldown',
         icon: 'chat.png',
         internal: 'removeChatDelay',
         enabled: true,
+        description: 'Remove the client-side chat delay in the friends tab',
       },
       {
         name: 'Mumble fix',
         icon: 'mumble.png',
         internal: 'mumbleFix',
         enabled: false,
+        description: 'Allow mumblelink on Linux, but is not recommended to use',
       },
       {
         name: 'Websocket',
@@ -332,12 +380,15 @@ export default {
           to: 'wss://assetserver.lunarclientprod.com/connect',
         },
         enabled: false,
+        description: 'Change the Lunar Client asset websocket URL',
       },
       {
         name: 'Show wrapped',
         icon: 'wrapped.png',
         internal: 'enableWrapped',
         enabled: false,
+        description:
+          'Re-enable Lunar Client Wrapped, useful for people that still want to view it',
       },
     ],
     customizing: {
@@ -371,7 +422,9 @@ export default {
       logger.debug(
         `${customization.name} is now ${
           customization.enabled ? 'enabled' : 'disabled'
-        }`
+        } with value${
+          Object.keys(customization.values).length > 1 ? 's' : ''
+        } ${Object.values(customization.values).join(', ')}`
       );
       await this.writeCustomizations();
     },
@@ -392,6 +445,17 @@ export default {
         (customizations) =>
           customizations.name === this.customizing.customization.name
       ).value = this.customizing.customization.value;
+      const customization = this.customizations.find(
+        (customizations) =>
+          customizations.name === this.customizing.customization.name
+      );
+      logger.debug(
+        `${customization.name} is now ${
+          customization.enabled ? 'enabled' : 'disabled'
+        } with value${
+          Object.keys(customization.values).length > 1 ? 's' : ''
+        } ${Object.values(customization.values).join(', ')}`
+      );
       await this.writeCustomizations();
     },
 
@@ -457,7 +521,7 @@ export default {
 <style scoped>
 #options-background-filter {
   position: fixed;
-  background-color: #000000ae;
+  background-color: rgba(0, 0, 0, 0.8);
   height: 80%;
   width: 100%;
   top: 110px;
@@ -466,49 +530,63 @@ export default {
 
 #options-container {
   position: fixed;
-  background-color: #232324;
-  border: 1px solid #75797e56;
+  background-color: #181818;
   height: fit-content;
-  padding: 20px;
   z-index: 100;
-  width: 60%;
+  width: 70%;
+  overflow: hidden;
   left: calc((50vw - 50%) * -1);
   top: calc((50vh - 50%) * -1);
   transform: translate(calc(50vw - 50%), calc(50vh - 50%));
-  border-radius: 5px;
+  border: 2px #1f1f1f solid;
+  border-radius: 15px;
 }
 
 #options-title-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin-top: 25px;
+  align-items: center;
+  gap: 5px;
+  padding: 40px 25px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), #181818),
+    url('../../assets/cards-backgrounds/patcher.webp');
+  background-size: cover;
+  background-position: center;
+}
+
+.options-title-section {
+  display: flex;
 }
 
 #options-icon {
-  height: 55px;
-  width: 55px;
+  height: 45px;
+  width: 45px;
   margin-right: 20px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
 }
 
 #options-title {
   letter-spacing: 2px;
   font-weight: 600;
-  text-transform: uppercase;
-  margin-top: 8px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
 #options-content {
   display: flex;
   flex-direction: column;
-  margin-top: 25px;
+  padding: 20px;
   align-items: center;
 }
 
 #options-label {
-  font-weight: 200;
-  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0.5px;
-  margin-bottom: 20px;
+  width: 600px;
+  text-align: center;
+  color: #c8c8c8;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  font-size: 0.85rem;
 }
 
 .options-value-container {
@@ -518,24 +596,25 @@ export default {
 
 .options-value-title {
   text-align: center;
-  font-weight: 400;
-  letter-spacing: 0.2px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   font-size: 18px;
-  margin-right: 15px;
+  margin-right: 20px;
 }
 
 .options-input {
   border: none;
-  background-color: #1c1c1c;
-  border: 0.5px solid #4141416d;
+  background-color: #0f0f0f;
   outline: none;
   height: 30px;
   width: 450px;
   margin: 10px 0;
   font-size: 20px;
-  padding: 15px;
+  color: #505050;
+  font-weight: 600;
+  padding: 10px 15px;
   text-align: center;
-  border-radius: 15px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar {
@@ -565,7 +644,7 @@ export default {
   height: 250px;
   border-radius: 20px;
   border: 3px solid #30323456;
-  transition: background-color 0.3s;
+  transition: background-color 0.5s;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -573,6 +652,25 @@ export default {
 
 .customization-container:hover {
   background-color: rgba(77, 80, 83, 0.337);
+}
+
+.customization-container::before {
+  content: attr(description);
+  opacity: 0;
+  width: 100%;
+  color: #f7f7f783;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  text-align: center;
+  padding: 0 0px;
+  transition: opacity 0.25s ease;
+  position: absolute;
+  left: 0;
+  top: 48%;
+  font-size: 0.75em;
+}
+.customization-container:hover::before {
+  opacity: 1;
 }
 
 .customization-icon-container {
@@ -592,12 +690,17 @@ export default {
 }
 
 .customization-name {
-  color: #a4a9ad70;
   text-align: center;
   font-weight: 400;
   margin-top: 25px;
   color: #f7f7f783;
   font-size: 20px;
+  opacity: 1;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.customization-container:hover .customization-name {
+  opacity: 0;
 }
 
 .customization-toggle-btn {
