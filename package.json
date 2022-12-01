@@ -29,7 +29,9 @@
     "discord-rpc": "^4.0.1",
     "electron-settings": "^4.0.2",
     "extract-zip": "^2.0.1",
+    "net": "^1.0.2",
     "node-machine-id": "^1.1.12",
+    "procbridge": "^1.1.1",
     "uuid": "^9.0.0",
     "vuex": "^4.1.0",
     "zip-local": "^0.3.5"

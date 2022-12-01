@@ -1,10 +1,12 @@
 'use strict';
 
-import { app, protocol, BrowserWindow } from 'electron';
+import { app, BrowserWindow, protocol } from 'electron';
+import { createServer } from 'net';
+import { Server } from 'procbridge';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 
 // import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer';
-const isDevelopment = app.isPackaged;
+const isDevelopment = !app.isPackaged;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -53,6 +55,7 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  else BrowserWindow.getAllWindows().forEach((win) => win.show());
 });
 
 // This method will be called when Electron has finished
@@ -84,3 +87,77 @@ if (isDevelopment) {
     });
   }
 }
+
+const IPCServer = new Server('127.0.0.1', 28189, async (method, data) => {
+  switch (method) {
+    case 'open-window':
+      console.log('Opening Login Window');
+      return new Promise(async (res) => {
+        const window = new BrowserWindow({
+          width: data.width,
+          height: data.height,
+          autoHideMenuBar: true,
+          show: false,
+          resizable: false,
+          title: 'Loading...',
+          fullscreenable: false,
+        });
+        let finalURL = null;
+        window.webContents.addListener('will-redirect', (event, url) => {
+          if (url.startsWith(data.targetUrlPrefix)) {
+            finalURL = url;
+            window.close();
+          }
+        });
+        window.on('close', () => {
+          window.removeAllListeners();
+          res(
+            finalURL === null
+              ? { status: 'CLOSED_WITH_NO_URL' }
+              : { status: 'MATCHED_TARGET_URL', url: finalURL }
+          );
+        });
+        window.webContents.session.clearCache();
+        window.webContents.session.clearStorageData();
+        window.loadURL(data.url);
+        window.on('show', () => {
+          window.setAlwaysOnTop(true);
+          window.setAlwaysOnTop(false);
+        });
+        window.once('ready-to-show', () => {
+          console.log('Showing Login Window');
+          window.show();
+        });
+      });
+    default:
+      console.error('Unknown IPC Method:', method);
+      break;
+  }
+});
+
+function isPortAvailable(port) {
+  return new Promise((res) => {
+    const server = createServer()
+      .addListener('error', () => res(false))
+      .addListener('listening', () => {
+        server.addListener('close', () => res(true));
+        server.close();
+      })
+      .listen(port, '127.0.0.1');
+  });
+}
+async function startIPCServer() {
+  const available = await isPortAvailable(28189);
+  if (available) {
+    console.log('Starting IPC Server');
+    IPCServer.start();
+    console.log('Started IPC Server');
+  } else {
+    console.warn(
+      'Failed to start IPC Server: Port not avilable. Will try again in 30 seconds.'
+    );
+    setTimeout(() => startIPCServer(), 3e4);
+  }
+}
+
+startIPCServer();

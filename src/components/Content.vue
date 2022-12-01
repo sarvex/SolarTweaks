@@ -11,12 +11,13 @@
 import Play from './Content/Play.vue';
 import Home from './Content/Home.vue';
 import Servers from './Content/Servers.vue';
-import Patcher from './Content/Patcher.vue';
+import Engine from './Content/Engine.vue';
 import Settings from './Content/Settings.vue';
 import About from './Content/About.vue';
 import Debug from './Content/Debug.vue';
 
 import SentryNotification from './SentryNotification';
+import { verifyEngine } from '../javascript/engine';
 
 export default {
   name: 'Content',
@@ -24,18 +25,20 @@ export default {
     Play,
     Home,
     Servers,
-    Patcher,
+    Engine,
     Settings,
     About,
     Debug,
     SentryNotification,
   },
-  mounted: () => {
+  async mounted() {
+    await verifyEngine();
     setTimeout(
       () => document.getElementById('loader-container').remove(),
+      // Give it an extra 50ms to load children
       Date.now() - document.created < 750
-        ? 750 - (Date.now() - document.created)
-        : 0
+        ? 800 - (Date.now() - document.created)
+        : 50
     );
   },
 };

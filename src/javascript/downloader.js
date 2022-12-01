@@ -1,10 +1,10 @@
-import { createHash } from 'crypto';
 import axios from 'axios';
+import { createHash } from 'crypto';
 import { createWriteStream, existsSync } from 'fs';
 // import { DownloaderHelper } from 'node-downloader-helper';
 
-import Logger from './logger';
 import { mkdir, readFile, writeFile } from 'fs/promises';
+import Logger from './logger';
 const logger = new Logger('downloader');
 
 /**

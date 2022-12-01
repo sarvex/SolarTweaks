@@ -12,16 +12,23 @@ export default {
     WEBSITE: 'https://solartweaks.com',
   },
   API_URL: 'https://server.solartweaks.com/api',
-  PATCHER: {
-    PATCHER: 'solar-patcher.jar',
+  ENGINE: {
+    ENGINE: 'solar-engine.jar',
     CONFIG: 'config.json',
+    CONFIG_EXAMPLE: 'config.example.json',
+    METADATA: 'metadata.json',
+    // EDIT (repo name & branch)
     CONFIG_EXAMPLE_URL:
-      'https://raw.githubusercontent.com/Solar-Tweaks/SolarPatcher/main/config.example.json',
+      'https://raw.githubusercontent.com/Solar-Tweaks/Solar-Engine/main/config.example.json',
+    // EDIT (repo name & branch)
+    METADATA_URL:
+      'https://raw.githubusercontent.com/Solar-Tweaks/Solar-Engine/main/metadata.json',
   },
   UPDATERS: {
     INDEX: '/updater/index',
     LAUNCHER: '/updater/?item=launcher&version={version}',
-    PATCHER: '/updater/?item=patcher&version={version}',
+    // EDIT (item name)
+    ENGINE: '/updater/?item=engine&version={version}',
   },
   ENDPOINTS: {
     LAUNCH: '/launch',

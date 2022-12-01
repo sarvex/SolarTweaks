@@ -1,9 +1,9 @@
-import { createApp } from 'vue';
-import App from './App.vue';
-import store from './store';
 import { remote as electron } from 'electron';
 import settings from 'electron-settings';
+import { createApp } from 'vue';
+import App from './App.vue';
 import constants from './constants';
+import store from './store';
 
 import * as Sentry from '@sentry/vue';
 
@@ -26,5 +26,7 @@ if (electron.app.isPackaged) {
     },
     attachStacktrace: true,
     release: electron.app.getVersion(),
+    ignoreErrors: [/AxiosError: Network Error/i],
+    logErrors: true,
   });
 } else console.log('App is not packaged, not initializing Sentry.');

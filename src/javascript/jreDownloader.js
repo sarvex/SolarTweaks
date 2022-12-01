@@ -1,13 +1,13 @@
 import { exec } from 'child_process';
 import extract from 'extract-zip';
 import { existsSync } from 'fs';
+import { move } from 'fs-extra';
 import { mkdir, readdir, rm, rmdir } from 'fs/promises';
 import { arch, platform } from 'os';
 import { join } from 'path';
 import constants from '../constants';
 import { downloadAndSaveFile } from './downloader';
 import Logger from './logger';
-import { move } from 'fs-extra';
 const logger = new Logger('jreDownloader');
 
 /**
@@ -79,11 +79,12 @@ export async function downloadJre(_jre) {
         .then(res)
         .catch(async () => {
           logger.info('JRE Temp Path already exists, clearing...');
-          for (const file of await readdir(jrePath + '_temp')) {
-            await rm(join(jrePath + '_temp', file), {
-              recursive: true,
-            });
-          }
+          await rm(jrePath + '_temp', {
+            recursive: true,
+          });
+          await mkdir(jrePath + '_temp', {
+            recursive: true,
+          });
         })
     );
     if (

@@ -28,9 +28,9 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - OS: [e.g. Windows]
- - Launcher version [eg. 4.0.1]
- - Patcher version [eg. 1.6] (If you can't find this, leave blank)
- - Solar Stats version (if applicable)
+ - Launcher Version [eg. 4.0.1]
+ - Engine Version [eg. 1.6] (If you can't find this, leave blank)
+ - Solar Stats Version (if applicable)
 
 **Additional context**
 Add any other context about the problem here.  

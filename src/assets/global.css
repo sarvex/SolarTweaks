@@ -28,18 +28,17 @@ p {
 /* Panton */
 
 @font-face {
-  font-family: "Panton";
+  font-family: 'Panton';
   font-style: normal;
   font-weight: 390;
-  src: local("Panton"),
-    url("./fonts/Panton-BlackCaps.woff2") format("woff");
+  src: local('Panton'), url('./fonts/Panton-BlackCaps.woff2') format('woff');
   font-display: swap;
 }
 
 /* Minecraft */
 @font-face {
-  font-family: "Minecraft";
-  src: url("./fonts/Minecraft-Regular.woff2") format("woff2");
+  font-family: 'Minecraft';
+  src: url('./fonts/Minecraft-Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

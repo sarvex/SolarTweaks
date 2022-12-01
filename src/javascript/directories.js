@@ -1,4 +1,4 @@
-import { stat, mkdir } from 'fs/promises';
+import { mkdir, stat } from 'fs/promises';
 import Logger from './logger';
 
 const logger = new Logger('directories');

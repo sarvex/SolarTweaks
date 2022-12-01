@@ -1,10 +1,10 @@
-import { checkHash, downloadAndSaveFile } from './downloader';
-import { join } from 'path';
-import store from '../store';
-import Logger from './logger';
-import constants from '../constants';
 import { existsSync } from 'fs';
 import { mkdir, readFile } from 'fs/promises';
+import { join } from 'path';
+import constants from '../constants';
+import store from '../store';
+import { checkHash, downloadAndSaveFile } from './downloader';
+import Logger from './logger';
 
 const logger = new Logger('launcher');
 

@@ -118,7 +118,7 @@ span {
 
 #shortcut-form {
   position: fixed;
-    background: linear-gradient(to top, #0e0e0ebd, #151515),
+  background: linear-gradient(to top, #0e0e0ebd, #151515),
     url('.././assets/cards-backgrounds/settings-1.png');
   background-size: cover;
   background-position: center;

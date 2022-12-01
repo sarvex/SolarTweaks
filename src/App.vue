@@ -30,6 +30,10 @@ export default {
   },
 
   async mounted() {
+    settings.configure({
+      prettify: true,
+    });
+
     // Setup solartweaks folder
     const directories = [
       [],
@@ -67,11 +71,6 @@ export default {
 
     // Discord RPC
     login();
-  },
-  beforeMount() {
-    settings.configure({
-      prettify: true,
-    });
   },
 };
 </script>

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { remote } from 'electron';
 import settings from 'electron-settings';
-import extractZip from 'extract-zip';
+import { default as extract, default as extractZip } from 'extract-zip';
 import { existsSync } from 'fs';
-import { mkdir, readFile, stat, writeFile } from 'fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'fs/promises';
 import { machineId as _machineId } from 'node-machine-id';
 import { arch as osArch, platform, release } from 'os';
 import { join } from 'path';
@@ -15,8 +15,9 @@ import store from '../store';
 import { downloadLunarAssets } from './assets';
 import { disableRPC, login as connectRPC, updateActivity } from './discord';
 import { checkHash, downloadAndSaveFile } from './downloader';
+import { verifyEngine } from './engine';
 import Logger, { createMinecraftLogger } from './logger';
-import { getDotMinecraftDirectory } from './settings';
+import { getDefaultJREPath, getDotMinecraftDirectory } from './settings';
 
 const logger = new Logger('launcher');
 
@@ -69,18 +70,157 @@ export async function setupLunarClientDirectory() {
     } else logger.debug(`${folder} subdirectory already exists, skipping...`);
   }
 }
+/**
+ * Download the Official Lunar JRE
+ * @param metadata The LC Launch Metadata
+ * @returns Whether the download was successful
+ */
+export async function downloadDefaultJRE(metadata) {
+  const jre = metadata.jre;
+  const path = join(constants.DOTLUNARCLIENT, 'jre', jre.folderChecksum);
+  await downloadAndSaveFile(
+    jre.download.url,
+    `${path}.${jre.download.extension}`,
+    'blob'
+  );
+  if (jre.download.extension === 'zip') {
+    if (
+      !(await new Promise((res) =>
+        extract(`${path}.zip`, { dir: path })
+          .then(() => res(true))
+          .catch(async (err) => {
+            logger.throw(`Failed to extract ${path}.zip`, err);
+            await rm(`${path}.zip`);
+            res(false);
+          })
+      ))
+    )
+      return false;
+  } else if (jre.download.extension === 'tar.gz') {
+    if (
+      !(await new Promise((res) =>
+        mkdir(path)
+          .then(() => res(true))
+          .catch(async () => {
+            logger.info('JRE Path already exists, skipping download...');
+            await rm(`${path}.tar.gz`);
+            res(false);
+          })
+      ))
+    )
+      return false;
+    if (
+      !(await new Promise((res) =>
+        exec(`tar -xzvf ${path}.tar.gz -C ${path}`, async (err) => {
+          if (err) {
+            logger.throw(`Failed to extract ${path}.tar.gz`, err);
+            await rm(`${path}.tar.gz`);
+            res(false);
+          } else res(true);
+        })
+      ))
+    )
+      return false;
+  } else return false;
+  await rm(`${path}.${jre.download.extension}`);
+  await settings.set(
+    'jrePath',
+    join(
+      path,
+      ...jre.executablePathInArchive.splice(
+        0,
+        jre.executablePathInArchive.length - 1
+      )
+    )
+  );
+  return true;
+}
+/**
+ * Deal with an Invalid JRE
+ * @param metadata The LC Launch Metadata
+ * @returns Whether a valid JRE was selected
+ */
+export async function invalidJRE(metadata) {
+  logger.warn(
+    'JRE not found! Showing error dialog and aborting launch process'
+  );
+
+  const choice = await remote.dialog.showMessageBox({
+    type: 'error',
+    title: 'JRE not found',
+    message:
+      'The JRE you selected was not found or is invalid.\n\nPlease select a valid JRE in the settings page or download one using the JRE downloader.\n\nMake sure you selected the bin folder inside of the JRE.',
+    buttons: ['Cancel launch', 'Select JRE', 'Download Default JRE'],
+  });
+
+  if (choice.response === 1) {
+    store.commit('setLaunchingState', {
+      title: `LAUNCHING`,
+      message: 'SELECTING JRE...',
+      icon: 'fa-solid fa-gamepad',
+    });
+    store.commit('setLaunching', true);
+    // Set new folder
+    const folder = await remote.dialog.showOpenDialog({
+      title: `Select the new JRE for Lunar Client (Select the bin folder)`,
+      defaultPath: await settings.get('jrePath'),
+      properties: ['dontAddToRecent', 'openDirectory'],
+    });
+
+    if (folder.canceled) {
+      store.commit('setLaunchingState', {
+        title: `LAUNCH ${await settings.get('version')}`,
+        message: 'READY TO LAUNCH',
+        icon: 'fa-solid fa-gamepad',
+      });
+      store.commit('setLaunching', false);
+      return;
+    }
+
+    await settings.set('jrePath', folder.filePaths[0]);
+    return await checkJRE(metadata);
+  } else if (choice.response === 2) {
+    store.commit('setLaunchingState', {
+      title: `LAUNCHING`,
+      message: 'DOWNLOADING DEFAULT JRE...',
+      icon: 'fa-solid fa-gamepad',
+    });
+    store.commit('setLaunching', true);
+    const path = await getDefaultJREPath();
+    if (path == '') {
+      logger.info('No JRE Already Installed, Downloading New One...');
+      if (!(await downloadDefaultJRE(metadata))) return false;
+    } else {
+      logger.info('JRE Already Installed');
+      await settings.set('jrePath', path);
+    }
+    return await checkJRE(metadata);
+  } else {
+    // Cancel launch or closed
+    store.commit('setLaunchingState', {
+      title: `LAUNCH ${await settings.get('version')}`,
+      message: 'READY TO LAUNCH',
+      icon: 'fa-solid fa-gamepad',
+    });
+    store.commit('setLaunching', false);
+    logger.error('JRE not found');
+    return false;
+  }
+}
 
 /**
  * Checks if the JRE is valid
+ * @param metadata The LC Launch Metadata
+ * @returns If the JRE is valid
  */
-export async function checkJRE() {
+export async function checkJRE(metadata) {
   store.commit('setLaunchingState', {
     title: 'LAUNCHING...',
     message: 'CHECKING JRE...',
     icon: 'fa-solid fa-folder',
   });
 
-  const jrePath = await settings.get('jrePath');
+  const jrePath = (await settings.get('jrePath')) ?? '';
   const javaName = process.platform === 'win32' ? 'java.exe' : 'java';
 
   const exists = {
@@ -89,42 +229,8 @@ export async function checkJRE() {
   };
 
   // If one of them is missing
-  if (!exists.jre || !exists.java) {
-    logger.warn(
-      'JRE not found! Showing error dialog and aborting launch process'
-    );
-
-    const choice = await remote.dialog.showMessageBox({
-      type: 'error',
-      title: 'JRE not found',
-      message:
-        'The JRE you selected was not found or is invalid.\n\nPlease select a valid JRE in the settings page or download one using the JRE downloader.\n\nMake sure you selected the bin folder inside of the JRE.',
-      buttons: ['Select JRE', 'Cancel launch'],
-    });
-
-    if (choice.response === 0) {
-      // Set new folder
-      const folder = await remote.dialog.showOpenDialog({
-        title: `Select the new JRE for Lunar Client (Select the bin folder)`,
-        defaultPath: jrePath,
-        properties: ['dontAddToRecent', 'openDirectory'],
-      });
-
-      if (folder.canceled) return;
-
-      await settings.set('jrePath', folder.filePaths[0]);
-      await checkJRE();
-    } else {
-      // Cancel launch or closed
-      store.commit('setLaunchingState', {
-        title: `LAUNCH ${await settings.get('version')}`,
-        message: 'READY TO LAUNCH',
-        icon: 'fa-solid fa-gamepad',
-      });
-      store.commit('setLaunching', false);
-      throw new Error('JRE not found');
-    }
-  }
+  if (!exists.jre || !exists.java) return await invalidJRE(metadata);
+  else return true;
 }
 
 /**
@@ -154,7 +260,9 @@ export async function fetchMetadata(skipLaunchingState = false) {
     os_release,
     arch,
   ] = await Promise.all([
-    _machineId(),
+    _machineId().catch((err) => {
+      logger.error('Failed to fetch Machine ID', err);
+    }),
     settings.get('version'),
     getHWIDPrivate(),
     getInstallationID(),
@@ -174,7 +282,6 @@ export async function fetchMetadata(skipLaunchingState = false) {
         {
           hwid,
           installation_id,
-          hwid_private,
           os,
           os_release,
           arch,
@@ -182,6 +289,7 @@ export async function fetchMetadata(skipLaunchingState = false) {
           branch: 'master',
           launch_type: 'OFFLINE',
           module,
+          ...(hwid_private ? { hwid_private } : {}),
         },
         { 'Content-Type': 'application/json', 'User-Agent': 'SolarTweaks' }
       )
@@ -336,19 +444,21 @@ export async function checkNatives(metadata) {
 }
 
 /**
- * Check patcher (and download if needed)
+ * Check engine (and download if needed)
  * @returns {Promise<void>}
  */
-export async function checkPatcher() {
-  logger.info('Checking patcher...');
+export async function checkEngine() {
+  logger.info('Checking engine...');
 
   store.commit('setLaunchingState', {
     title: 'LAUNCHING...',
-    message: 'CHECKING PATCHER...',
+    message: 'CHECKING ENGINE...',
     icon: 'fa-solid fa-file',
   });
 
-  const release = await axios
+  await verifyEngine();
+
+  /*const release = await axios
     .get(`${constants.API_URL}${constants.UPDATERS.INDEX}`)
     .catch((reason) => {
       logger.throw('Failed to fetch updater index', reason);
@@ -356,58 +466,49 @@ export async function checkPatcher() {
 
   if (!release) return;
 
-  const patcherPath = join(
-    constants.DOTLUNARCLIENT,
-    'solartweaks',
-    'solar-patcher.jar'
+  const enginePath = join(
+    constants.SOLARTWEAKS_DIR,
+    constants.ENGINE.ENGINE
   );
 
-  // Check if file solar-patcher.jar exists
-  if (
-    !(await stat(
-      join(constants.SOLARTWEAKS_DIR, constants.PATCHER.PATCHER)
-    ).catch(() => false))
-  ) {
+  // Check if file solar-engine.jar exists
+  if (!(await stat(enginePath).catch(() => false))) {
     await downloadAndSaveFile(
-      `${constants.API_URL}${constants.UPDATERS.PATCHER.replace(
+      `${constants.API_URL}${constants.UPDATERS.ENGINE.replace(
         '{version}',
-        release.data.index.stable.patcher
+        release.data.index.stable.engine
       )}`,
-      patcherPath,
+      enginePath,
       'blob'
     );
-    await settings.set('patcherVersion', release.data.index.stable.patcher);
+    await settings.set('engineVersion', release.data.index.stable.engine);
     return; // No need to check for updates, we just downloaded the latest version
   }
 
-  const patcherVer = await settings.get('patcherVersion');
-  const latestVer = release.data.index.stable.patcher;
+  const engineVer = await settings.get('engineVersion');
+  const latestVer = release.data.index.stable.engine;
 
-  if (patcherVer === latestVer)
-    return logger.info(`Patcher is up to date ${patcherVer}`);
+  if (engineVer === latestVer)
+    return logger.info(`Engine is up to date ${engineVer}`);
 
   await downloadAndSaveFile(
-    `${constants.API_URL}${constants.UPDATERS.PATCHER.replace(
+    `${constants.API_URL}${constants.UPDATERS.ENGINE.replace(
       '{version}',
-      release.data.index.stable.patcher
+      release.data.index.stable.engine
     )}`,
-    patcherPath,
+    enginePath,
     'blob'
   );
 
-  logger.info(`Patcher updated to ${latestVer}`);
-  await settings.set('patcherVersion', latestVer);
+  logger.info(`Engine updated to ${latestVer}`);
+  await settings.set('engineVersion', latestVer);
 
-  logger.debug('Updating config.json file to match new patcher config...');
+  logger.debug('Updating config.example.json file to match new engine config...');
   const defaultConfigFile = (
-    await axios.get(constants.PATCHER.CONFIG_EXAMPLE_URL)
+    await axios.get(constants.ENGINE.CONFIG_EXAMPLE_URL)
   ).data;
 
-  const configPath = join(
-    constants.DOTLUNARCLIENT,
-    'solartweaks',
-    constants.PATCHER.CONFIG
-  );
+  const configPath = join(constants.SOLARTWEAKS_DIR, constants.ENGINE.CONFIG);
 
   function merge(obj1, obj2) {
     const newObj = { ...obj1, ...obj2 };
@@ -422,97 +523,26 @@ export async function checkPatcher() {
     defaultConfigFile,
     JSON.parse(await readFile(configPath, 'utf8'))
   );
-  await writeFile(configPath, JSON.stringify(newConfig, null, 2));
+  await writeFile(configPath, JSON.stringify(newConfig, null, 2));*/
 }
 
 /**
- * Check patcher config file (and download if needed)
+ * Check engine config file (and download if needed)
  * @returns {Promise<void>}
  */
-export async function checkPatcherConfig() {
-  const configPath = join(
-    constants.DOTLUNARCLIENT,
-    'solartweaks',
-    constants.PATCHER.CONFIG
-  );
+export async function checkEngineConfig() {
+  const configPath = join(constants.SOLARTWEAKS_DIR, constants.ENGINE.CONFIG);
   await stat(configPath).catch(async () => {
     logger.info('Creating config file');
     await downloadAndSaveFile(
-      constants.PATCHER.CONFIG_EXAMPLE_URL,
+      constants.ENGINE.CONFIG_EXAMPLE_URL,
       configPath,
       'text'
     ).catch((err) => {
-      logger.throw('Failed to download default patcher config', err);
+      logger.throw('Failed to download default engine config', err);
     });
-    logger.info('Created default patcher config');
+    logger.info('Created default engine config');
   });
-}
-
-/**
- * Edit the `config.json` file for the Java Agent
- * @returns {Promise<void>}
- */
-export async function patchGame() {
-  logger.info('Patching game...');
-
-  store.commit('setLaunchingState', {
-    title: 'LAUNCHING...',
-    message: 'PATCHING GAME...',
-    icon: 'fa-solid fa-cog',
-  });
-
-  const filePath = join(
-    constants.DOTLUNARCLIENT,
-    'solartweaks',
-    constants.PATCHER.CONFIG
-  );
-
-  logger.debug(`Reading ${filePath}`);
-  const configRaw = await readFile(filePath).catch((reason) => {
-    logger.throw('Failed to read config.json', reason);
-  });
-  if (!configRaw) return;
-
-  const config = JSON.parse(configRaw);
-  const customizations = await settings.get('customizations');
-
-  config.metadata.removeCalls = [];
-  config.metadata.isEnabled = true;
-
-  customizations.forEach((customization) => {
-    // Privacy module
-    if (Object.prototype.hasOwnProperty.call(customization, 'privacyModules')) {
-      customization.privacyModules.forEach((module) => {
-        if (!Object.prototype.hasOwnProperty.call(config, module)) return;
-        config[module].isEnabled = customization.enabled;
-      });
-      return;
-    }
-
-    if (!Object.keys(config).includes(customization.internal)) return;
-
-    // Metadata module
-    if (customization.internal === 'metadata') {
-      config.metadata.removeCalls.push(customization.call);
-      return;
-    }
-
-    config[customization.internal].isEnabled = customization.enabled;
-    if (Object.prototype.hasOwnProperty.call(customization, 'values')) {
-      for (const key in customization.values) {
-        config[customization.internal][key] = customization.values[key];
-      }
-    }
-  });
-
-  logger.debug(`Writing ${filePath}`);
-  await writeFile(filePath, JSON.stringify(config, null, 2))
-    .then(() => {
-      logger.debug('Successfully wrote config.json');
-    })
-    .catch((reason) => {
-      logger.throw('Failed to write config.json', reason);
-    });
 }
 
 /**
@@ -555,26 +585,22 @@ export async function getJavaArguments(
     )?.path || getDotMinecraftDirectory();
 
   const resolution = await settings.get('resolution');
-  const patcherPath = join(
-    constants.DOTLUNARCLIENT,
-    'solartweaks',
-    constants.PATCHER.PATCHER
-  );
+  const enginePath = join(constants.SOLARTWEAKS_DIR, constants.ENGINE.ENGINE);
 
-  // Make sure the patcher exists, or else the game will crash (jvm init error)
-  await stat(patcherPath)
+  // Make sure the engine exists, or else the game will crash (jvm init error)
+  await stat(enginePath)
     .then(() => {
       args.push(
-        `-javaagent:"${patcherPath}"="${join(
+        `-javaagent:"${enginePath}"="${join(
           constants.DOTLUNARCLIENT,
           'solartweaks',
-          constants.PATCHER.CONFIG
+          constants.ENGINE.CONFIG
         )}"`
       );
     })
     .catch((e) =>
       logger.warn(
-        `Not adding patcher in arguments; ${patcherPath} does not exist!`,
+        `Not adding engine in arguments; ${enginePath} does not exist!`,
         e
       )
     );
@@ -640,11 +666,14 @@ export async function getJavaArguments(
     '.',
     '--classpathDir',
     join(constants.DOTLUNARCLIENT, 'offline', 'multiver'),
-    '--hwid',
-    await _machineId(),
     '--installationId',
     await getInstallationID()
   );
+
+  const machineId = await _machineId().catch((err) => {
+    logger.error('Failed to fetch Machine ID', err);
+  });
+  if (machineId) args.push('--hwid', machineId);
 
   if (serverIp) args.push('--server', `"${serverIp}"`);
 
@@ -733,8 +762,17 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
     shell: debug,
   });
 
+  proc.on('error', (error) => {
+    if (error.message.includes('ENOENT') || error.message.includes('EACCES')) {
+      proc.kill();
+      invalidJRE(metadata).then((valid) => {
+        if (valid) launchGame(...arguments);
+      });
+    } else logger.throw(error);
+  });
+
   function commitLaunch() {
-    updateActivity('In the launcher');
+    updateActivity('In Game');
     store.commit('setLaunchingState', {
       title: `LAUNCHED`,
       message: 'GAME IS RUNNING',
@@ -750,11 +788,10 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
   proc.stdout.pipe(minecraftLogger);
   proc.stderr.pipe(minecraftLogger);
 
-  if (debug) {
-    await remote.shell.openPath(minecraftLogger.path);
-  }
+  if (debug) await remote.shell.openPath(minecraftLogger.path);
 
   proc.stdout.once('end', () => {
+    updateActivity('In the launcher');
     store.commit('setLaunchingState', {
       title: `LAUNCH ${version}`,
       message: 'READY TO LAUNCH',
@@ -766,8 +803,11 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
     connectRPC();
   });
 
-  proc.stdout.once('data', async (/* data */) => {
-    setTimeout(commitLaunch, 2500);
+  async function waitForLaunch(data) {
+    if (!data.toString('utf8').includes('Starting game!')) return;
+    proc.stdout.removeListener('data', waitForLaunch);
+    await new Promise((res) => setTimeout(res, 3000));
+    commitLaunch();
     if (debug) return;
     await disableRPC();
     switch (await settings.get('actionAfterLaunch')) {
@@ -781,9 +821,9 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
       case 'keep':
         break;
     }
-  });
+  }
 
-  proc.on('error', (error) => logger.error(error));
+  proc.stdout.on('data', waitForLaunch);
 
   proc.stdout.on('error', (error) =>
     logger.throw('Failed to launch game', error)
@@ -805,8 +845,9 @@ export async function checkAndLaunch(serverIp = null) {
   let success = true;
 
   function error(action, err) {
+    console.error(action, err);
     store.commit('setLaunchingState', {
-      title: action + 'Error',
+      title: action + ' Error',
       message: err.message,
       icon: 'fa-solid fa-exclamation-triangle',
     });
@@ -823,7 +864,8 @@ export async function checkAndLaunch(serverIp = null) {
 
   if (!(await settings.get('skipChecks'))) {
     // Check JRE
-    await checkJRE().catch((err) => error('Check JRE', err));
+    if (!(await checkJRE(metadata).catch((err) => error('Check JRE', err))))
+      return;
 
     // Check game directory
     await setupLunarClientDirectory().catch((err) =>
@@ -846,17 +888,12 @@ export async function checkAndLaunch(serverIp = null) {
       error('Check LC Assets', err)
     );
 
-    // Check patcher
-    await checkPatcher().catch((err) => error('Check Patcher', err));
+    // Engine config
+    await checkEngineConfig().catch((err) => error('Check Engine Config', err));
 
-    // Patcher config
-    await checkPatcherConfig().catch((err) =>
-      error('Check Patcher Config', err)
-    );
+    // Check engine
+    await checkEngine().catch((err) => error('Check Engine', err));
   }
-
-  // Update patcher config file
-  await patchGame().catch((err) => error('Patch Game', err));
 
   if (!success) return;
 

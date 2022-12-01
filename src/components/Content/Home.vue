@@ -30,7 +30,7 @@
             </p>
           </div>
           <button class="post-button" @click="openLink(post.url)">
-            <i :class="post.button ? post.button.icon : 'fa-solid fa-book'"></i
+            <i :class="post.button?.icon ?? 'fa-solid fa-book'"></i
             ><span class="post-btn-text">{{
               post.button ? post.button.text : 'Read more'
             }}</span>

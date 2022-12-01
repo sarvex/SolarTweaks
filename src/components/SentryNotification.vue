@@ -21,7 +21,7 @@ import Logger from '../javascript/logger';
 const logger = new Logger('Sentry');
 
 export default {
-  name: "SentryNotification",
+  name: 'SentryNotification',
   data: () => ({
     previouslyShown: true,
   }),

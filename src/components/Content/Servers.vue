@@ -357,6 +357,16 @@ export default {
   padding: 10px 0;
   cursor: pointer;
   border-radius: 15px;
+  transform: perspective(1px) scale(1);
+  -webkit-transform: perspective(1px) scale(1);
+  font-smooth: subpixel-antialiased;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transition: transform 0.4s ease;
+}
+
+.server-play-btn:hover {
+  transform: perspective(1px) scale(1.1);
+  -webkit-transform: perspective(1px) scale(1.1);
 }
 
 .server-play-btn:disabled {

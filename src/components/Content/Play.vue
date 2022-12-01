@@ -98,9 +98,9 @@
                 v-for="versionModule in selectedVersion.modules"
                 v-bind:key="versionModule"
                 @click="setModule(versionModule)"
-                :class="
-                  selectedModule === versionModule ? 'selected-module' : ''
-                "
+                v-bind:class="{
+                  'selected-module': selectedModule === versionModule,
+                }"
                 class="select-version-module"
                 :style="`background: url('${
                   versionModule === 'neu'
@@ -637,5 +637,4 @@ export default {
 .select-version-revert:hover {
   background: #b63333;
 }
-
 </style>
