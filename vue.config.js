@@ -11,10 +11,10 @@ module.exports = {
           icon: 'build/icons/win/icon.ico',
           publisherName: 'Solar Tweaks',
           verifyUpdateCodeSignature: true,
+          requestedExecutionLevel: "asInvoker",
         },
         nsis: {
           oneClick: true,
-          perMachine: true,
           installerIcon: 'build/icons/win/icon.ico',
           uninstallerIcon: 'build/icons/win/icon.ico',
           installerHeaderIcon: 'build/icons/win/icon.ico',
