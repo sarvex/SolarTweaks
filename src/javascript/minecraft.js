@@ -613,10 +613,8 @@ export async function getJavaArguments(
 
   const ram = await settings.get('ram');
 
-  const jvmArguments = (await settings.get('jvmArguments')).split(' ').filter(arg => arg.length);
-  if (jvmArguments.length) args.push(...jvmArguments);
-
   args.push(
+    ...(await settings.get('jvmArguments')).split(' '),
     `-Xmx${ram}m`,
     `-Xmn${ram}m`,
     `-Xms${ram}m`,
@@ -746,13 +744,10 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
   const version = await settings.get('version');
   const args = await getJavaArguments(metadata, serverIp).catch((error) => {
     store.commit('setLaunchingState', {
-      title: `LAUNCH ${version}`,
-      message: 'READY TO LAUNCH',
-      icon: 'fa-solid fa-gamepad',
+      title: 'Error',
+      message: error.message,
+      icon: 'fa-solid fa-exclamation-triangle',
     });
-    this.$store.commit('setLaunching', false);
-    store.commit('setErrorMessage', error.stack);
-    store.commit('setErrorModal', true);
     logger.throw('Failed to get Java Arguments', error);
   });
 
@@ -852,13 +847,10 @@ export async function checkAndLaunch(serverIp = null) {
   function error(action, err) {
     console.error(action, err);
     store.commit('setLaunchingState', {
-      title: `LAUNCH ${version}`,
-      message: 'READY TO LAUNCH',
-      icon: 'fa-solid fa-gamepad',
+      title: action + ' Error',
+      message: err.message,
+      icon: 'fa-solid fa-exclamation-triangle',
     });
-    this.$store.commit('setLaunching', false);
-    store.commit('setErrorMessage', err.stack);
-    store.commit('setErrorModal', true);
     success = false;
     logger.throw(`Failed to ${action}`, err);
   }
