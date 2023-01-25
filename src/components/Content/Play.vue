@@ -207,6 +207,9 @@ export default {
       await checkAndLaunch().catch((error) => {
         logger.throw('Failed to Launch Game', error);
         updateActivity('In the launcher');
+        this.$store.commit('setErrorMessage', error.stack);
+        this.$store.commit('setErrorModal', true);
+        this.updateLaunchButton();
       });
     },
     /**
@@ -229,6 +232,7 @@ export default {
         message: 'READY TO LAUNCH',
         icon: 'fa-solid fa-gamepad',
       });
+      this.$store.commit('setLaunching', false);
     },
     /**
      * Update the selected version

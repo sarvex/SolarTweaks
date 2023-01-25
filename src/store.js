@@ -11,6 +11,8 @@ const store = createStore({
       icon: 'fa-solid fa-gamepad',
     },
     isCreatingShortcut: false,
+    showModal: false,
+    errorMessage: '',
   },
 
   getters: {
@@ -36,6 +38,12 @@ const store = createStore({
     setCreatingShortcut(state, isCreatingShortcut) {
       state.isCreatingShortcut = isCreatingShortcut;
     },
+    setErrorModal(state, showModal) {
+      state.showModal = showModal;
+    },
+    setErrorMessage(state, errorMessage) {
+      state.errorMessage = errorMessage;
+    }
   },
 });
 

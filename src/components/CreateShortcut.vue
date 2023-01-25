@@ -84,17 +84,17 @@ export default {
 }
 
 select {
-  margin: 10px;
-  width: 250px;
-  padding: 5px 35px 5px 5px;
-  font-size: 12px;
-  border: none;
-  text-align: center;
-  border-radius: 4px;
-  outline: none;
-  height: 40px;
-  appearance: none;
+  width: 265px;
+  height: 50px;
   background-color: #0f0f0f;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 12px;
+  padding: 8px;
+  margin: 10px;
+  border-radius: 4px;
+  appearance: none;
 }
 
 span {
@@ -147,6 +147,14 @@ span {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+#shortcut-content-name {
+  margin-left: 8px;
+}
+
+#shortcut-content-version {
+  margin-left: 50px;
 }
 
 .button {
