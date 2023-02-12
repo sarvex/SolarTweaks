@@ -4,7 +4,9 @@
       v-for="server in servers"
       v-bind:key="servers.indexOf(server)"
       class="server-container"
-      :style="`background: ${getBackground(server.background)}`"
+      :style="`background: linear-gradient(0deg, rgb(0 0 0 / 70%), rgb(0 0 0 / 0%)), ${getBackground(
+        server.background
+      )}; background-size: cover;`"
     >
       <div class="server-icon-container">
         <img
@@ -31,11 +33,19 @@
           :disabled="$store.state.isLaunching"
           @click="launchGame(server.ip)"
         >
-          <i class="fa-solid fa-play fa-4x server-play-btn-icon"></i>
-          <br /><span class="server-play-btn-text">PLAY</span>
+          <i class="fa-solid fa-play fa-2x server-play-btn-icon"></i>
         </button>
       </div>
-      <div class="server-delete-container">
+      <div class="server-buttons-container">
+        <button class="server-star-btn" @click="toggleStarredServer(server.ip)">
+          <i
+            class="fa-star server-star-btn-icon"
+            v-bind:class="{
+              'fa-solid': server.starred,
+              'fa-regular': !server.starred,
+            }"
+          ></i>
+        </button>
         <button
           class="server-delete-btn"
           @click="removeServer(servers.indexOf(server))"
@@ -50,7 +60,7 @@
         v-if="!isAddingServer"
         @click="isAddingServer = !isAddingServer"
       >
-        <i class="fa-solid fa-plus fa-2x"></i>
+        <i class="fa-solid fa-plus"></i>
       </button>
       <div v-if="isAddingServer">
         <input
@@ -147,6 +157,7 @@ export default {
         delete server.icon;
         delete server.status;
         delete server.playerCount;
+        delete server.starred;
       });
       await settings.set('servers', servers);
       logger.info('Saved servers to settings');
@@ -193,13 +204,16 @@ export default {
         await axios
           .get(constants.links.SERVER_STATUS_ENDPOINT, { params: query })
           .then((response) => {
-            cache.set(server.ip, response.data);
+            if (response.data.status === 'success')
+              cache.set(server.ip, response.data);
             content = response.data;
             logger.debug(`Fetched ${server.ip} status`);
           });
       }
       if (content.status === 'success') {
-        server.playerCount = content.players.now;
+        if (parseInt(content.players.max) > parseInt(content.players.now))
+          server.playerCount = content.players.now + '/' + content.players.max;
+        else server.playerCount = content.players.now;
         server.icon = content.favicon ?? placeHolderIcon;
         server.status = 'Online';
       } else {
@@ -207,6 +221,9 @@ export default {
         server.status = 'Offline';
         server.icon = placeHolderIcon;
       }
+      server.starred = (await settings.get('starredServers')).includes(
+        server.ip
+      );
     },
 
     /**
@@ -215,11 +232,22 @@ export default {
      */
     getBackground(background) {
       if (typeof background === 'number') {
-        if (background >= 0 && background <= 7) {
+        if (background >= 0 && background <= 8) {
           return `url('${require(`@/assets/servers-backgrounds/${background}.webp`)}')`;
         } else
           return `url('${require(`@/assets/servers-backgrounds/1.webp`)}')`;
       } else return `url('${background}')`;
+    },
+
+    async toggleStarredServer(ip) {
+      const starred = await settings.get('starredServers');
+      if (starred.includes(ip)) starred.splice(starred.indexOf(ip), 1);
+      else starred.push(ip);
+      await settings.set('starredServers', starred);
+      this.servers = this.servers.map((server) => {
+        if (server.ip == ip) server.starred = starred.includes(ip);
+        return server;
+      });
     },
   },
 
@@ -238,57 +266,84 @@ export default {
   grid-template-rows: repeat(3, 150px);
   grid-column-gap: 30px;
   grid-row-gap: 15px;
-  margin-top: 15px;
+  margin-top: 30px;
   justify-content: center;
 }
 
 #add-server-container {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 5px;
-  background: #1d1d1b;
-  border: 0.5px dashed #2f2f2d;
+  background: var(--server-background);
+  border: 1px dashed #2f2f2d;
+  box-shadow: rgb(0 0 0 / 13%) 0px 1px 5px 0px;
 }
 
 #add-server-btn {
-  width: 50px;
-  height: 50px;
+  width: 100%;
+  height: 100%;
   background: transparent;
+  border-radius: 5px;
+  font-size: 1.75rem;
+  text-rendering: optimizeLegibility;
+  opacity: 0.2;
   border: none;
   cursor: pointer;
-  transition: transform 0.45s ease;
+  transition: 0.45s ease;
 }
 
 #add-server-btn:hover {
-  transform: perspective(1px) scale(1.25);
+  opacity: 0.5;
 }
 
 .add-server-input {
-  width: 200px;
-  height: 20px;
-  background-color: #171717;
   border: none;
+  background-color: #0f0f0fb4;
   outline: none;
-  padding: 6px;
-  margin-top: 7px;
+  height: 10px;
+  width: 300px;
+  margin: 5px 0;
+  border: 1px solid transparent;
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 600;
+  padding: 10px 15px;
+  text-align: center;
+  transition: 0.25s ease;
+  border-radius: 5px;
+}
+
+.add-server-input:focus {
+  background-color: #0f0f0f;
+  border: 1px solid var(--color-blue);
+  box-shadow: 0 0 0 2px var(--color-blue-outline);
 }
 
 #add-server-submit {
-  width: 212px;
-  height: 30px;
-  background-color: #171717;
-  border: none;
+  border-radius: 5px;
+  width: 330px;
+  height: 40px;
+  padding: 10px 15px;
+  margin: 5px auto;
+  font-weight: 500;
+  background-color: #3b97be1d;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 0 0 0px var(--color-blue-outline);
+  letter-spacing: 0.5px;
+  border: 1px solid var(--color-blue);
   outline: none;
   cursor: pointer;
   font-size: 15px;
-  margin-top: 7px;
-  transform: perspective(1px) scale(1);
-  transition: transform 0.2s ease-in-out;
+  transition: 0.2s ease-in-out;
 }
 
 #add-server-submit:hover {
-  transform: perspective(1px) scale(1.1);
+  border: 1px solid var(--color-blue);
+  box-shadow: 0 0 0 2px var(--color-blue-outline);
+  background-color: var(--color-blue-outline);
 }
 
 .server-container {
@@ -297,24 +352,16 @@ export default {
   width: 370px;
   height: 150px;
   border-radius: 10px;
-  transform: perspective(1px) scale(1);
-  -webkit-transform: perspective(1px) scale(1);
-  font-smooth: subpixel-antialiased;
-  -webkit-font-smoothing: subpixel-antialiased;
+  box-shadow: rgb(0 0 0 / 13%) 0px 1px 5px 0px;
   transition: transform 0.4s ease;
-}
-
-.server-container:hover {
-  transform: perspective(1px) scale(1.05);
-  -webkit-transform: perspective(1px) scale(1.05);
 }
 
 .server-icon {
   -webkit-user-drag: none;
-  width: 85px;
-  height: 85px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
-  margin: 30px 0 0 10px;
+  margin: 43px 0 0 20px;
 }
 
 .server-details-container {
@@ -334,39 +381,41 @@ export default {
 }
 
 .server-detail {
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  text-shadow: var(--text-shadow);
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   color: #e6e6e6;
   letter-spacing: 1px;
 }
 
 .server-play-container {
+  position: absolute;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: -5px;
+  margin-top: 80px;
+  margin-left: 300px;
   float: right;
 }
 
 .server-play-btn {
-  height: 100px;
-  width: 80px;
-  border: none;
-  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  width: 50px;
+  border: 1px solid var(--color-blue);
+  background-color: var(--color-blue-outline);
   padding: 10px 0;
   cursor: pointer;
   border-radius: 15px;
-  transform: perspective(1px) scale(1);
-  -webkit-transform: perspective(1px) scale(1);
-  font-smooth: subpixel-antialiased;
-  -webkit-font-smoothing: subpixel-antialiased;
-  transition: transform 0.4s ease;
+  transition: background-color 0.25s ease;
 }
 
 .server-play-btn:hover {
-  transform: perspective(1px) scale(1.1);
-  -webkit-transform: perspective(1px) scale(1.1);
+  box-shadow: 0 0 0 2px var(--color-blue-outline);
+  background-color: var(--color-blue);
 }
 
 .server-play-btn:disabled {
@@ -374,28 +423,31 @@ export default {
 }
 
 .server-play-btn-icon {
-  margin-left: -15px;
+  margin-left: -7px;
   transition: color 0.2s ease-in-out;
 }
 
-.server-play-btn:disabled > .server-play-btn-icon {
-  color: #858585;
+.server-play-btn:disabled {
+  background-color: var(--color-blue);
 }
 
-.server-play-btn-text {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-  margin-top: 10px;
-  transition: color 0.2s ease-in-out;
+.server-buttons-container {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  margin-left: 325px;
+  margin-top: 8px;
 }
 
-.server-play-btn:disabled > .server-play-btn-text {
-  color: #858585;
+.server-star-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
-.server-delete-container {
-  margin-top: 3px;
+.server-star-btn-icon {
+  transition: 0.2s ease;
+  color: #f0c413;
 }
 
 .server-delete-btn {

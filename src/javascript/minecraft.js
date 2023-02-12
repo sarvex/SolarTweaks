@@ -266,10 +266,6 @@ export async function fetchMetadata(skipLaunchingState = false) {
     settings.get('version'),
     getHWIDPrivate(),
     getInstallationID(),
-    // All versions have a module called "lunar"
-    // Special modules:
-    // 1.8.9 = neu
-    // 1.16.5, 1.17.1, 1.18.2, 1.19.2 = sodium
     settings.get('module'),
     platform(),
     release(),
@@ -457,73 +453,6 @@ export async function checkEngine() {
   });
 
   await verifyEngine();
-
-  /*const release = await axios
-    .get(`${constants.API_URL}${constants.UPDATERS.INDEX}`)
-    .catch((reason) => {
-      logger.throw('Failed to fetch updater index', reason);
-    });
-
-  if (!release) return;
-
-  const enginePath = join(
-    constants.SOLARTWEAKS_DIR,
-    constants.ENGINE.ENGINE
-  );
-
-  // Check if file solar-engine.jar exists
-  if (!(await stat(enginePath).catch(() => false))) {
-    await downloadAndSaveFile(
-      `${constants.API_URL}${constants.UPDATERS.ENGINE.replace(
-        '{version}',
-        release.data.index.stable.engine
-      )}`,
-      enginePath,
-      'blob'
-    );
-    await settings.set('engineVersion', release.data.index.stable.engine);
-    return; // No need to check for updates, we just downloaded the latest version
-  }
-
-  const engineVer = await settings.get('engineVersion');
-  const latestVer = release.data.index.stable.engine;
-
-  if (engineVer === latestVer)
-    return logger.info(`Engine is up to date ${engineVer}`);
-
-  await downloadAndSaveFile(
-    `${constants.API_URL}${constants.UPDATERS.ENGINE.replace(
-      '{version}',
-      release.data.index.stable.engine
-    )}`,
-    enginePath,
-    'blob'
-  );
-
-  logger.info(`Engine updated to ${latestVer}`);
-  await settings.set('engineVersion', latestVer);
-
-  logger.debug('Updating config.example.json file to match new engine config...');
-  const defaultConfigFile = (
-    await axios.get(constants.ENGINE.CONFIG_EXAMPLE_URL)
-  ).data;
-
-  const configPath = join(constants.SOLARTWEAKS_DIR, constants.ENGINE.CONFIG);
-
-  function merge(obj1, obj2) {
-    const newObj = { ...obj1, ...obj2 };
-    for (const key in newObj)
-      if (typeof newObj[key] === 'object')
-        newObj[key] = merge(obj1[key], obj2[key]);
-
-    return newObj;
-  }
-
-  const newConfig = merge(
-    defaultConfigFile,
-    JSON.parse(await readFile(configPath, 'utf8'))
-  );
-  await writeFile(configPath, JSON.stringify(newConfig, null, 2));*/
 }
 
 /**
@@ -614,7 +543,9 @@ export async function getJavaArguments(
   const ram = await settings.get('ram');
 
   args.push(
-    ...(await settings.get('jvmArguments')).split(' '),
+    ...(await settings.get('jvmArguments'))
+      .split(' ')
+      .filter((arg) => arg?.length),
     `-Xmx${ram}m`,
     `-Xmn${ram}m`,
     `-Xms${ram}m`,
@@ -628,21 +559,7 @@ export async function getJavaArguments(
     '--accessToken',
     '0',
     '--assetIndex',
-    version === '1.7'
-      ? '1.7.10'
-      : version === '1.8.9'
-      ? '1.8'
-      : version === '1.18.2'
-      ? '1.18'
-      : version === '1.17.1'
-      ? '1.17'
-      : version === '1.16.5'
-      ? '1.16'
-      : version === '1.12.2'
-      ? '1.12'
-      : version === '1.19.2'
-      ? '1.19'
-      : version,
+    version === '1.7' ? '1.7.10' : version.split('.').splice(0, 2).join('.'),
     '--userProperties',
     '{}',
     '--gameDir',
@@ -768,7 +685,7 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
       invalidJRE(metadata).then((valid) => {
         if (valid) launchGame(...arguments);
       });
-    } else logger.throw(error);
+    } else logger('Game Launch Error', error);
   });
 
   function commitLaunch() {
@@ -847,10 +764,13 @@ export async function checkAndLaunch(serverIp = null) {
   function error(action, err) {
     console.error(action, err);
     store.commit('setLaunchingState', {
-      title: action + ' Error',
-      message: err.message,
-      icon: 'fa-solid fa-exclamation-triangle',
+      title: `LAUNCH ${version}`,
+      message: 'READY TO LAUNCH',
+      icon: 'fa-solid fa-gamepad',
     });
+    store.commit('setLaunching', false);
+    store.commit('setErrorMessage', `${action} Error: ` + (err.stack ?? err));
+    store.commit('setErrorModal', true);
     success = false;
     logger.throw(`Failed to ${action}`, err);
   }
@@ -907,7 +827,7 @@ export async function checkAndLaunch(serverIp = null) {
   await axios
     .post(`${constants.API_URL}${constants.ENDPOINTS.LAUNCH}`, {
       item: 'launcher',
-      version: version.split('.').splice(0, 2).join('.'),
+      version,
     })
     .catch((error) =>
       logger.warn(

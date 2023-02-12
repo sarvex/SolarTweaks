@@ -2,7 +2,7 @@
   <div class="card">
     <div
       class="card-header"
-      :style="`background-image: url('${require(`@/assets/cards-backgrounds/${background}.png`)}')`"
+      :style="`background: linear-gradient(0deg, rgb(0 0 0 / 50%), rgb(0 0 0 / 0%)), url('${require(`@/assets/cards-backgrounds/${background}.png`)}')`"
     >
       <div class="card-header-container">
         <div class="card-title-container">
@@ -29,6 +29,7 @@ export default {
 .card {
   width: 90%;
   height: auto;
+  box-shadow: rgb(0 0 0 / 13%) 0px 1px 5px 0px;
 }
 
 .card-header {
@@ -58,13 +59,13 @@ export default {
 .card-icon {
   font-size: 25px;
   margin-right: 10px;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: var(--text-shadow);
 }
 .card-title {
-  font-weight: 500;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
-  font-size: 25px;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-shadow: var(--text-shadow);
+  font-size: 1.5rem;
 }
 
 .card-subtitle {
@@ -78,7 +79,7 @@ export default {
 
 .card-content {
   height: auto;
-  background-color: #201f1d;
+  background-color: var(--card-background);
   border-bottom-right-radius: 5px;
   border-bottom-left-radius: 5px;
   overflow: hidden;

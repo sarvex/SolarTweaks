@@ -1,6 +1,6 @@
 import { captureException } from '@sentry/vue';
 import { createWriteStream } from 'fs';
-import { appendFile, mkdir, rm, writeFile } from 'fs/promises';
+import { appendFile, mkdir, readFile, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
 import constants from '../constants';
 
@@ -51,7 +51,11 @@ export default class Logger {
       join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
       `${log}\n`
     ).catch(async (reason) => {
-      if (reason.includes('no such file or directory')) {
+      if (
+        (typeof reason === 'string' ? reason : reason.toString()).includes(
+          'no such file or directory'
+        )
+      ) {
         await clearLogs();
         await appendFile(
           join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
@@ -81,16 +85,25 @@ export async function createMinecraftLogger(version) {
  * Clears the log file
  */
 export async function clearLogs() {
-  await rm(join(constants.SOLARTWEAKS_DIR, 'logs'), {
-    recursive: true,
-  }).catch(() => {});
+  await stat(join(constants.SOLARTWEAKS_DIR, 'logs')).catch(() =>
+    mkdir(join(constants.SOLARTWEAKS_DIR, 'logs'), {
+      recursive: true,
+    })
+  );
 
-  await mkdir(join(constants.SOLARTWEAKS_DIR, 'logs'), {
-    recursive: true,
-  });
+  const oldLog = await readFile(
+    join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
+    'utf-8'
+  ).catch(() => '');
 
   await writeFile(
     join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-latest.log'),
     ''
+  );
+
+  await writeFile(
+    join(constants.SOLARTWEAKS_DIR, 'logs', 'launcher-old.log'),
+    oldLog,
+    'utf-8'
   );
 }

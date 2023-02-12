@@ -45,7 +45,10 @@ export async function downloadJre(_jre) {
   }
 
   if (!jre) {
-    logger.throw(`Failed to get JRE from JREs List for ${_jre.name}`);
+    logger.throw(
+      `Failed to get JRE from JREs List for ${_jre.name}`,
+      JSON.stringify(_jre)
+    );
     return false;
   }
 

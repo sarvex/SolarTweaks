@@ -21,8 +21,9 @@ export function checkDirectory(path) {
             res();
           })
           .catch((err) => {
+            if (err.code == 'EEXIST') return res();
             const error = 'Failed to Create Folder ' + path + ' ' + err;
-            logger.throw(error);
+            logger.throw('Failed to Create Folder ' + path, err);
             rej(error);
           });
       });

@@ -1,6 +1,6 @@
 {
   "name": "solartweaks",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "author": "SolarTweaks",
   "contributors": [
     "RichardDorian",
@@ -48,6 +48,8 @@
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0",
+    "sass": "^1.57.1",
+    "sass-loader": "^10.1.1",
     "vue": "^3.2.41",
     "vue-cli-plugin-electron-builder": "~2.1.1"
   },

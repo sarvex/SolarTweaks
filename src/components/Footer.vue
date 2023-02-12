@@ -7,7 +7,8 @@
         alt="Solar Tweaks Logo"
       />
       <h4 id="solartweaks-text" class="footer-text">
-        Solar Tweaks • {{ version }} • {{ os }}
+        Solar Tweaks • {{ version }} • {{ os }} •
+        {{ served ? 'Development (Served)' : 'Production' }}
       </h4>
     </div>
     <div id="links-container">
@@ -18,7 +19,7 @@
           class="link"
           @click="openLink(link.url)"
         >
-          <i :class="link.icon" style="color: #3b3b3b"></i>
+          <i :class="link.icon" style="color: var(--color-footer-text)"></i>
         </li>
       </ul>
     </div>
@@ -64,6 +65,7 @@ export default {
         url: constants.links.WEBSITE,
       },
     ],
+    served: !remote.app.isPackaged,
   }),
 
   methods: {
@@ -81,7 +83,7 @@ export default {
 <style scoped>
 #footer-container {
   position: fixed;
-  background-color: #141414;
+  background-color: var(--card-background);
   bottom: 0;
   height: 50px;
   width: 100%;
@@ -104,10 +106,9 @@ export default {
 }
 
 .footer-text {
-  color: #3b3b3b;
+  color: var(--color-footer-text);
   font-weight: 600;
   letter-spacing: 0.25px;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
   font-size: 17px;
 }
 
@@ -118,16 +119,19 @@ export default {
 }
 
 #links {
+  position: absolute;
+  left: 50%;
+  bottom: 12.5px;
+  transform: translateX(-50%);
   list-style-type: none;
 }
 
 .link {
   display: inline;
   margin: 0 10px;
-  color: #3b3b3b;
+  color: var(--color-footer-text);
   font-size: 20px;
   cursor: pointer;
-  text-shadow: 0 2px 0 #00000050;
   transition: 0.2s ease;
 }
 

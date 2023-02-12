@@ -10,7 +10,9 @@ const store = createStore({
       message: 'READY TO LAUNCH',
       icon: 'fa-solid fa-gamepad',
     },
-    isCreatingShortcut: false,
+    isShowingTutorial: false,
+    showModal: false,
+    errorMessage: '',
   },
 
   getters: {
@@ -33,8 +35,14 @@ const store = createStore({
     setLaunchingState(state, launchingState) {
       state.launchingState = launchingState;
     },
-    setCreatingShortcut(state, isCreatingShortcut) {
-      state.isCreatingShortcut = isCreatingShortcut;
+    setTutorialState(state, isShowingTutorial) {
+      state.isShowingTutorial = isShowingTutorial;
+    },
+    setErrorModal(state, showModal) {
+      state.showModal = showModal;
+    },
+    setErrorMessage(state, errorMessage) {
+      state.errorMessage = errorMessage;
     },
   },
 });

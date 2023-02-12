@@ -3,9 +3,9 @@
     <div class="card-item-header">
       <div class="card-item-header-title-container">
         <i :class="icon" class="card-item-icon"></i>
-        <h1 class="card-item-title">{{ title }}</h1>
+        <h1 class="card-item-title" v-html="title"></h1>
       </div>
-      <h4 class="card-item-subtitle">{{ subtitle }}</h4>
+      <h4 class="card-item-subtitle" v-html="subtitle"></h4>
     </div>
     <div :class="['card-item-content', contentClass]">
       <slot></slot>
@@ -23,7 +23,7 @@ export default {
 
 <style scoped>
 .card-item {
-  background-color: #1d1d1b;
+  background-color: var(--card-color-item-background);
   border-radius: 10px;
   padding: 15px;
   margin: 5px;
@@ -49,15 +49,16 @@ export default {
 }
 
 .card-item-title {
+  color: var(--engine-color-text);
   font-weight: 500;
   letter-spacing: 1px;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+  text-shadow: var(--short-text-shadow);
   font-size: 20px;
 }
 .card-item-subtitle {
   font-weight: 300;
   font-size: 11.5px;
-  color: #d1d1d1;
+  color: var(--color-text);
   letter-spacing: 0.2px;
   margin-top: 5px;
 }

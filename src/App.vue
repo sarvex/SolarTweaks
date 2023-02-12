@@ -18,6 +18,9 @@ import { checkForUpdates } from './javascript/updater';
 import { remote } from 'electron';
 import { join } from 'path';
 import settings from 'electron-settings';
+import { verifyEngine } from './javascript/engine';
+import { doesLunarExists } from './javascript/lunar';
+
 import './assets/global.css';
 
 export default {
@@ -32,21 +35,27 @@ export default {
   async mounted() {
     settings.configure({
       prettify: true,
+      numSpaces: 4,
+      atomicSave: true,
     });
 
     // Setup solartweaks folder
     const directories = [
-      [],
-      ['solartweaks'],
-      ['solartweaks', 'logs'],
-      ['solartweaks', 'jres'],
+      [[]],
+      [['solartweaks'], ['jre']],
+      [
+        ['solartweaks', 'logs'],
+        ['solartweaks', 'jres'],
+      ],
     ];
 
-    await Promise.all(
-      directories.map((directory) =>
-        checkDirectory(join(constants.DOTLUNARCLIENT, ...directory))
-      )
-    );
+    for (const directorySet of directories) {
+      await Promise.all(
+        directorySet.map((directory) =>
+          checkDirectory(join(constants.DOTLUNARCLIENT, ...directory))
+        )
+      );
+    }
 
     // Clear logs file because new launch (or reload)
     await clearLogs();
@@ -66,11 +75,38 @@ export default {
       remote.app.quit();
     }
 
+    // Engine/Metadata/Config-Example
+    await verifyEngine();
+
     // Auto updater
     checkForUpdates(); // No await because running in background
 
     // Discord RPC
     login();
+
+    if (await settings.get('shownTutorial'))
+      this.$store.commit('setTutorialState', false);
+    else this.$store.commit('setTutorialState', true);
+
+    setTimeout(
+      async () => {
+        document.getElementById('loader-container').remove();
+        if (doesLunarExists()) {
+          await settings.set('LCInstalled', true);
+        } else if (await settings.get('LCInstalled')) {
+          await settings.set('LCInstalled', false);
+          this.$store.commit(
+            'setErrorMessage',
+            'It looks like you dont have Lunar Client installed. \nYou need Lunar installed in order to use Solar Tweaks.\n\nPlease download Lunar from https://lunarclient.com/download\n\nIf you do have Lunar installed, please ignore this message and click the CLOSE button below.'
+          );
+          this.$store.commit('setErrorModal', true);
+        }
+      },
+      // Give it an extra 50ms to load children
+      Date.now() - document.created < 750
+        ? 800 - (Date.now() - document.created)
+        : 50
+    );
   },
 };
 </script>
@@ -85,7 +121,7 @@ export default {
 }
 
 body {
-  background-color: #181818;
+  background-color: var(--color-background);
 }
 
 ::-webkit-scrollbar {

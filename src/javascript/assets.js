@@ -63,7 +63,7 @@ export async function downloadLunarAssets(metadata) {
   });
   return new Promise((resolve, reject) => {
     const postFolderCheck = (resolve, reject) => {
-      const indexPath = join(constants.DOTLUNARCLIENT, 'textures', 'index.txt');
+      const indexPath = join(constants.DOTLUNARCLIENT, 'launcher-cache', 'texturesIndex.txt');
       downloadAndSaveFile(
         metadata.textures.indexUrl,
         indexPath,

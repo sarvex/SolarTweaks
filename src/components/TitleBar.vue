@@ -1,16 +1,15 @@
 <template>
   <div id="fixed-container">
     <div id="title-bar-container">
-      <div id="title-bar-label">
+      <div id="title-bar-label" @click="registerClick()">
         <img
-          src="@/assets/logo-gray.svg"
+          src="https://i.imgur.com/QS5ZAal.png"
           id="title-image"
           alt="Solar Tweaks Logo"
           class="logo-white"
-          height="50"
-          width="50"
+          height="58"
+          width="249"
         />
-        <h2 id="title">Solar Tweaks</h2>
       </div>
       <div id="nav-container">
         <ul id="nav">
@@ -26,13 +25,21 @@
         </ul>
       </div>
       <div id="button-container">
+        <div>
+          <button
+            class="titlebar-button"
+            @click="toggleTheme"
+            v-if="showThemeSwapper"
+          >
+            <i class="fa-solid fa-brush titlebar-button-icon"></i>
+          </button>
+        </div>
         <button
           class="titlebar-button"
           id="shortcut-btn"
-          @click="createShortcut()"
-          v-if="platform === 'win32'"
+          @click="showTutorial()"
         >
-          <i class="fa-solid fa-share-from-square titlebar-button-icon"></i>
+          <i class="fa-solid fa-book titlebar-button-icon"></i>
         </button>
         <button class="titlebar-button" id="close-btn" @click="closeWindow()">
           <i class="fa-solid fa-xmark fa-2x titlebar-button-icon"></i>
@@ -40,22 +47,25 @@
       </div>
     </div>
   </div>
-  <CreateShortcut />
+  <ShowTutorial />
 </template>
 
 <script>
-import CreateShortcut from './CreateShortcut.vue';
+import ShowTutorial from './Tutorial.vue';
 import { remote } from 'electron';
-import { platform } from 'os';
+import settings from 'electron-settings';
 
 export default {
   name: 'TitleBar',
 
   components: {
-    CreateShortcut,
+    ShowTutorial,
   },
 
   data: () => ({
+    theme: 'dark',
+    showThemeSwapper: false,
+
     links: [
       {
         name: 'Home',
@@ -78,7 +88,7 @@ export default {
         active: false,
       },
     ],
-    platform: platform(),
+    clickCount: 0,
   }),
 
   methods: {
@@ -90,7 +100,7 @@ export default {
     },
 
     /**
-     * Set the active tab
+     * Set the active tab``
      * @param {string} tabName The name of the tab to set as active
      */
     setActiveTab(tabName) {
@@ -104,24 +114,70 @@ export default {
     },
 
     /**
-     * Open the shortcut creation window
+     * Open the tutorial window
      */
-    createShortcut() {
-      this.$store.commit(
-        'setCreatingShortcut',
-        !this.$store.state.isCreatingShortcut
-      );
+    showTutorial() {
+      this.$store.commit('setTutorialState', true);
+    },
+
+    async toggleTheme() {
+      if (this.theme === 'dark') this.theme = 'light';
+      else this.theme = 'dark';
+      document.body.setAttribute('data-theme', this.theme);
+      await settings.set('theme', this.theme);
+    },
+
+    async registerClick() {
+      this.clickCount++;
+      if (this.clickCount == 10) {
+        await settings.set('themeSwapperEnabled', true);
+        if (this.theme === 'dark') this.toggleTheme();
+      }
+    },
+
+    runDevShortcut() {
+      if (!this.links.find((link) => link.name == 'Debug')) {
+        let keysDone = '';
+        let keysAll = 'devenable';
+        let last = 0;
+        const listener = async (event) => {
+          if (Date.now() - last > 2000) keysDone = '';
+          if (event.key == keysAll.charAt(keysDone.length))
+            keysDone += event.key;
+          else keysDone = '';
+          if (keysDone.length == keysAll.length) {
+            this.links.push({ name: 'Debug', active: false });
+            await settings.set('DeveloperMode', true);
+            document.removeEventListener('keydown', listener);
+          }
+          last = Date.now();
+        };
+        document.addEventListener('keydown', listener);
+      }
     },
   },
-  beforeMount() {
-    // if (!remote.app.isPackaged)
-    //   this.links.push({ name: 'Debug', active: false });
+
+  async beforeMount() {
+    // Starts as ON if served and OFF if packaged
+    if (!(await settings.has('DeveloperMode')))
+      await settings.set('DeveloperMode', !remote.app.isPackaged);
+    if (await settings.get('DeveloperMode'))
+      this.links.push({ name: 'Debug', active: false });
+
+    this.clickCount = 0;
+    this.showThemeSwapper = await settings.get('themeSwapperEnabled');
+    this.theme = this.showThemeSwapper ? await settings.get('theme') : 'dark';
+    document.body.setAttribute('data-theme', this.theme);
   },
+
   mounted() {
+    document.body.setAttribute('data-theme', this.theme);
     // Set the active tab to the store's active tab
     this.links.find(
       (link) => link.name === this.$store.getters.getActiveTab
     ).active = true;
+
+    this.runDevShortcut();
   },
 };
 </script>
@@ -132,32 +188,36 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 50px;
-  background-color: #1a1a1a;
+  height: 100px;
   z-index: 10;
 }
 
 #title-bar-container {
-  height: 110px;
-  background-color: #0a0a0a;
+  height: 100px;
   width: 100%;
   -webkit-app-region: drag;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 110px;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgb(0, 0, 0, 0.7) 100%
+  );
 }
 
 #title-bar-label {
   display: flex;
   flex-direction: row;
   align-items: center;
+  filter: var(--logo-brightness);
+  z-index: 100;
 }
 
 #title-image {
   margin-left: 25px;
   margin-right: 15px;
-  filter: brightness(1.8);
 }
 
 #title {
@@ -173,73 +233,75 @@ export default {
   list-style-type: none;
 }
 
+#nav-container {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
 .nav-item {
   display: inline;
   margin: 0 5px;
 }
 
 .nav-btn {
+  position: relative;
   -webkit-app-region: no-drag;
   background-color: transparent;
   width: 100px;
   height: 40px;
   border: none;
-  box-shadow: 0 0 0 2px transparent;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  color: #a6a6a6;
+  letter-spacing: 0.25px;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease, color 0.25s ease, box-shadow 0.3s ease;
   font-size: 16px;
-  letter-spacing: 0px;
-  font-weight: normal;
-  border-radius: 3px;
+  font-weight: 500;
 }
 
 .nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  background-color: #1f1f1f;
+  color: #bbbbbb;
 }
 
 .nav-btn:disabled {
-  box-shadow: 0 0 0 2px #2b2b2b;
-  background-color: #1f1f1f;
-  cursor: default;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0) inset;
+  color: #bbbbbb;
+  cursor: pointer;
 }
 
 .titlebar-button {
   -webkit-app-region: no-drag;
-  background-color: #1f1f1f;
-  width: 35px;
-  height: 35px;
+  background: rgba(255, 255, 255, 0.05);
+  width: 40px;
+  height: 40px;
   border: none;
-  box-shadow: 0 0 0 2px #2b2b2b;
-  border-radius: 3px;
-  transition: background-color 0.5s ease-out;
-  position: absolute;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.5s ease-out, box-shadow 0.5s ease;
+}
+
+.titlebar-button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 #button-container {
-  width: 150px;
-}
-
-#shortcut-btn {
-  right: 85px;
-  top: 35px;
-}
-
-#shortcut-btn:hover {
-  background-color: #356fdc;
-  cursor: pointer;
-}
-
-#close-btn {
-  right: 35px;
-  top: 35px;
-}
-
-#close-btn:hover {
-  background-color: #dc3545;
-  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  text-align: right;
+  align-items: center;
+  justify-content: right;
+  position: absolute;
+  right: 30px;
 }
 
 .titlebar-button-icon {
-  font-size: 17px;
+  font-size: 18px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
 }
 </style>

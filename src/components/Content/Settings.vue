@@ -378,7 +378,7 @@ export default {
       },
       {
         name: 'Zulu optimized',
-        args: '-Xss2M -XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=32 -XX:G1HeapRegionSize=8M -XX:GCTimeLimit=50 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:+EliminateLocks -XX:+AggressiveHeap -XX:+EagerJVMCI',
+        args: '-XX:+UnlockExperimentalVMOptions -XX:+AlwaysActAsServerClassMachine -XX:MaxTenuringThreshold=1 -XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:-UsePerfData -XX:+PerfDisableSharedMem -XX:+AlwaysPreTouch -XX:+EliminateLocks -XX:+EagerJVMCI',
       },
       {
         name: 'GraalVM Community',
@@ -731,7 +731,7 @@ export default {
   width: 25px;
   -webkit-appearance: none;
   background-color: #343434;
-  background-image: url('../../assets/icons/checkmark.svg');
+  background-image: url('../../assets/checkmark.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-blend-mode: darken;
@@ -746,7 +746,7 @@ export default {
 }
 #settings-skip-checks-input:checked {
   background-color: #269e4e;
-  background-image: url('../../assets/icons/checkmark.svg');
+  background-image: url('../../assets/checkmark.svg');
   background-size: 70%;
   background-blend-mode: normal;
   color: #fff;
@@ -976,9 +976,8 @@ export default {
   height: 190px;
   margin-left: 380px;
   padding: 8px;
-  background-color: #1d1d1b;
-  border: #343434 1px solid;
-  border-radius: 5px;
+  background-color: var(--color-background);
+  border-radius: 0.75rem;
   display: flex;
   flex-direction: column;
 }
@@ -1075,7 +1074,7 @@ export default {
   width: 20px;
   -webkit-appearance: none;
   background-color: #343434;
-  background-image: url('../../assets/icons/checkmark.svg');
+  background-image: url('../../assets/checkmark.svg');
   background-size: 70%;
   background-position: center;
   background-repeat: no-repeat;
@@ -1093,7 +1092,7 @@ export default {
 #settings-debug-mode-input:checked {
   background: #269e4e;
   background-color: #269e4e;
-  background-image: url('../../assets/icons/checkmark.svg');
+  background-image: url('../../assets/checkmark.svg');
   background-size: 70%;
   background-position: center;
   background-repeat: no-repeat;

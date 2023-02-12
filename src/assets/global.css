@@ -15,6 +15,8 @@ span,
 div,
 textarea {
   color: #f7f7f7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 input {
@@ -64,12 +66,213 @@ p {
   padding: 0;
   margin: 0;
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  image-rendering: -webkit-optimize-quality;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
 }
 
 body {
-  background-color: #181818;
+  background: var(--color-background);
+
+  /* Fonts */
+
+  --font-primary: 'Roboto', sans-serif;
+  --font-secondary: 'Panton';
+  --font-minecraft: 'Minecraft';
+
+  /* Colors */
+
+  --color-darkest-gray: #151515;
+  --color-darker-gray: #222222;
+  --color-dark-gray: #303030;
+  --color-gray: #595959;
+  --color-light-gray: #cdcdcd;
+  --color-gray-outline: #87878740;
+  --color-ultra-blue: #0f94f3;
+  --color-ultra-blue-hover: #47a9ee;
+  --color-red: #de3434;
+  --color-red-hover: #f23d3d;
+  --color-red-outline: #de343440;
+  --color-green: #239649;
+  --color-green-hover: #28af55;
+  --color-green-outline: #28af5578;
+  --color-blue-static: #397d9b;
+  --color-blue: #3b96be;
+  --color-blue-hover: #42a8d3;
+  --color-blue-outline: #3b96be40;
+  --color-gold: #ffda74;
+  --color-gold-outline: #ffda7440;
+  --color-gold-hover: #ffe6a1;
+  --color-yellow: #ffc915;
+  --color-orange: #e6913d;
+  --color-orange-hover: #f29c46;
+  --color-orange-outline: #e6913d40;
+  --color-footer-text: #4e4e4e;
+
+  /* Backgrounds */
+
+  --play-background: url('https://i.imgur.com/VtUGHHD.png');
+  --tooltip-background: #141414;
+  --server-background: #17171798;
+  --backdrop-background: #000000d6;
+  --color-background: #121212;
+
+  /* Texts */
+
+  --color-dark-text: #b2b2b2;
+  --color-text: #bdc9c9;
+
+  /* Card */
+
+  --card-background: #171717;
+  --card-color-background: #171717;
+  --card-color-item-background: #1d1d1b;
+  --card-color-text: rgb(203, 203, 203);
+  --card-color-header: white;
+  --card-color-button: #000000;
+  --card-color-hover-text: #fff;
+
+  /* Shadows */
+
+  --text-shadow: 0px 2px 0px rgb(0 0 0 / 20%);
+  --short-text-shadow: 0px 1px 0px rgb(0 0 0 / 20%);
+
+  /* Other */
+
+  --engine-color-text: #c7c7c7;
+  --engine-card-hover: #232323;
+  --logo-brightness: brightness(1.5);
+  --icon-color: brightness(1);
+  --slider-color: rgba(255, 255, 255, 0.447);
+}
+
+body[data-theme='light'] {
+  background: var(--color-background);
+
+  /* Fonts */
+
+  --font-primary: 'Roboto', sans-serif;
+  --font-secondary: 'Panton';
+  --font-minecraft: 'Minecraft';
+
+  /* Colors */
+
+  --color-darkest-gray: #727272;
+  --color-darker-gray: #cbcbcb;
+  --color-dark-gray: #cbcbcb;
+  --color-gray: #cbcbcb;
+  --color-light-gray: #cdcdcd;
+  --color-gray-outline: #87878740;
+  --color-ultra-blue: #0f94f3;
+  --color-red: #de3434;
+  --color-red-hover: #f23d3d;
+  --color-red-outline: #de343440;
+  --color-green: #239649;
+  --color-green-hover: #28af55;
+  --color-green-outline: #28af5578;
+  --color-blue-static: #397d9b;
+  --color-blue: #3b96be;
+  --color-blue-hover: #42a8d3;
+  --color-blue-outline: #3b96be40;
+  --color-gold: #ffda74;
+  --color-gold-outline: #ffda7440;
+  --color-gold-hover: #ffe6a1;
+  --color-yellow: #ffc915;
+  --color-orange: #e6913d;
+  --color-orange-hover: #f29c46;
+  --color-orange-outline: #e6913d40;
+  --color-footer-text: #999999;
+
+  /* Backgrounds */
+
+  --play-background: url('https://i.imgur.com/VtUGHHD.png');
+  --tooltip-background: #141414;
+  --server-background: #ffffff98;
+  --backdrop-background: #111517d6;
+  --color-background: #e7e7e7;
+
+  /* Texts */
+
+  --color-dark-text: #4f4f4f;
+  --color-text: #737373;
+
+  /* Card */
+
+  --card-background: #ffffff;
+  --card-color-background: #efefef;
+  --card-color-item-background: #f1f1f1;
+  --card-color-text: rgb(99, 99, 99);
+  --card-color-header: white;
+  --card-color-button: #000000;
+  --card-color-hover-text: #fff;
+
+  /* Shadows */
+
+  --text-shadow: 0px 2px 0px rgb(0 0 0 / 20%);
+  --short-text-shadow: 0px 1px 0px rgb(0 0 0 / 20%);
+
+  /* Other */
+
+  --engine-color-text: #4d4d4d;
+  --engine-card-hover: #e9e9e9;
+  --logo-brightness: brightness(1);
+  --icon-color: brightness(0.75);
+  --slider-color: rgba(255, 255, 255, 0.447);
 }
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* Animations */
+
+@keyframes bounce_up {
+  0% {
+    transform: translateY(45px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade_up {
+  from {
+    transform: translateY(45px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale_down {
+  from {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes button_scale {
+  from {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(0.95);
+  }
 }

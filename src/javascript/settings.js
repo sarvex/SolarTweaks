@@ -19,10 +19,6 @@ export default async function setupSettings() {
   if (!(await settings.has('servers')))
     await settings.set('servers', defaultSettings.servers);
 
-  // User's selected customizations
-  if (!(await settings.has('customizations')))
-    await settings.set('customizations', defaultSettings.customizations);
-
   // User's selected version
   if (!(await settings.has('version')))
     await settings.set('version', defaultSettings.version);
@@ -99,6 +95,18 @@ export default async function setupSettings() {
         .map((dirent) => dirent.name)
     );
 
+  // Starred Servers (Quick Launch Menu)
+  if (!(await settings.has('starredServers')))
+    await settings.set('starredServers', defaultSettings.starredServers);
+
+  // App Theme
+  if (!(await settings.has('theme')))
+    await settings.set('theme', defaultSettings.theme);
+
+  // Tutorial Showed
+  if (!(await settings.has('shownTutorial')))
+    await settings.set('shownTutorial', defaultSettings.shownTutorial);
+
   logger.info(`Settings Setup at ${settings.file()}`);
 }
 
@@ -157,7 +165,6 @@ export const defaultSettings = {
     { name: 'ViperMC', ip: 'play.vipermc.net', background: 5 },
     { name: 'BWHub', ip: 'bwhub.net', background: 4 },
   ],
-  customizations: [],
   version: '1.8.9',
   module: 'lunar',
   launchDirectories: [
@@ -179,4 +186,7 @@ export const defaultSettings = {
   jrePath: '',
   debugMode: false,
   skipChecks: false,
+  starredServers: [],
+  theme: 'dark',
+  shownTutorial: false,
 };
