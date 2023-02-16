@@ -510,7 +510,11 @@ export async function getJavaArguments(
 
   const gameDir =
     (await settings.get('launchDirectories')).find(
-      (directory) => directory.version === version
+      (directory) =>
+        directory.version ===
+        (version.split('.').length === 3
+          ? version.split('.').splice(0, 2).join('.')
+          : version)
     )?.path || getDotMinecraftDirectory();
 
   const resolution = await settings.get('resolution');

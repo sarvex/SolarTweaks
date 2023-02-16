@@ -9,6 +9,7 @@
           class="logo-white"
           height="58"
           width="249"
+          draggable="false"
         />
       </div>
       <div id="nav-container">
@@ -212,7 +213,10 @@ export default {
   flex-direction: row;
   align-items: center;
   filter: var(--logo-brightness);
-  z-index: 100;
+  z-index: 100000;
+  -webkit-app-region: none;
+  left: 0;
+  position: absolute;
 }
 
 #title-image {

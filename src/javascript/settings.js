@@ -31,25 +31,24 @@ export default async function setupSettings() {
     await settings.set('launchDirectories', defaultSettings.launchDirectories);
   else {
     const directories = await settings.get('launchDirectories');
-    let launchDirectory = directories.find((d) => d.version === '1.8');
-    if (launchDirectory) launchDirectory.version = '1.8.9';
-    launchDirectory = directories.find((d) => d.version === '1.18');
-    if (launchDirectory) launchDirectory.version = '1.18.2';
-    launchDirectory = directories.find((d) => d.version === '1.17');
-    if (launchDirectory) launchDirectory.version = '1.17.1';
-    launchDirectory = directories.find((d) => d.version === '1.16');
-    if (launchDirectory) launchDirectory.version = '1.16.5';
-    launchDirectory = directories.find((d) => d.version === '1.12');
-    if (launchDirectory) launchDirectory.version = '1.12.2';
-    launchDirectory = directories.find(
-      (d) => d.version === '1.7' || d.version === '1.17.10'
-    );
-    if (launchDirectory) launchDirectory.version = '1.7.10';
-    if (!directories.find((d) => d.version === '1.19.2'))
-      directories.push({
-        version: '1.19.2',
-        directory: join(process.env.APPDATA, '.minecraft'),
-      });
+
+    for (const directory of directories) {
+      if (directory.version.split('.').length === 3) {
+        directory.version = directory.version.split('.').splice(0, 2).join('.');
+      }
+    }
+    for (const directory of directories) {
+      if (directories.filter((i) => i.version == directory.version).length > 1)
+        directories.splice(directories.indexOf(directory), 1);
+    }
+
+    const versions = defaultSettings.launchDirectories.map((i) => i.version);
+    for (const version of versions) {
+      if (!directories.find((d) => d.version === version))
+        directories.push(
+          defaultSettings.launchDirectories.find((i) => i.version === version)
+        );
+    }
 
     await settings.set('launchDirectories', directories);
   }
@@ -168,13 +167,13 @@ export const defaultSettings = {
   version: '1.8.9',
   module: 'lunar',
   launchDirectories: [
-    { version: '1.7.10', path: getDotMinecraftDirectory() },
-    { version: '1.8.9', path: getDotMinecraftDirectory() },
-    { version: '1.12.2', path: getDotMinecraftDirectory() },
-    { version: '1.16.5', path: getDotMinecraftDirectory() },
-    { version: '1.17.1', path: getDotMinecraftDirectory() },
-    { version: '1.18.2', path: getDotMinecraftDirectory() },
-    { version: '1.19.2', path: getDotMinecraftDirectory() },
+    { version: '1.7', path: getDotMinecraftDirectory() },
+    { version: '1.8', path: getDotMinecraftDirectory() },
+    { version: '1.12', path: getDotMinecraftDirectory() },
+    { version: '1.16', path: getDotMinecraftDirectory() },
+    { version: '1.17', path: getDotMinecraftDirectory() },
+    { version: '1.18', path: getDotMinecraftDirectory() },
+    { version: '1.19', path: getDotMinecraftDirectory() },
   ],
   ram: 2048,
   resolution: {
