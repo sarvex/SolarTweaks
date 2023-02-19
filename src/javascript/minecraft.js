@@ -563,7 +563,7 @@ export async function getJavaArguments(
     '--accessToken',
     '0',
     '--assetIndex',
-    version === '1.7' ? '1.7.10' : version.split('.').splice(0, 2).join('.'),
+    version === '1.7.10' ? '1.7.10' : version.split('.').splice(0, 2).join('.'),
     '--userProperties',
     '{}',
     '--gameDir',
