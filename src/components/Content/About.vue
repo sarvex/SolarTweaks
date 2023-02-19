@@ -196,7 +196,7 @@ export default {
           name: 'NotEvenJoking',
           link: 'https://github.com/770grappenmaker',
           avatar: 'https://avatars.githubusercontent.com/u/50543283',
-          reason: 'Main Java Developer',
+          reason: 'Main Engine Developer',
           aka: '770grappenmaker',
         },
         {
@@ -232,7 +232,7 @@ export default {
           name: 'Leoo',
           link: 'https://github.com/heyitsleo',
           avatar: 'https://avatars.githubusercontent.com/u/111710350',
-          reason: 'Gave ideas for many features and helped bug test',
+          reason: 'Gave ideas for many features and helped fix bugs',
         },
         {
           name: 'Waffles',
