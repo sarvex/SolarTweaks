@@ -35,11 +35,7 @@
             <i class="fa-solid fa-brush titlebar-button-icon"></i>
           </button>
         </div>
-        <button
-          class="titlebar-button"
-          id="shortcut-btn"
-          @click="showTutorial()"
-        >
+        <button class="titlebar-button" @click="showTutorial()">
           <i class="fa-solid fa-book titlebar-button-icon"></i>
         </button>
         <button class="titlebar-button" id="close-btn" @click="closeWindow()">
@@ -130,7 +126,7 @@ export default {
 
     async registerClick() {
       this.clickCount++;
-      if (this.clickCount == 10) {
+      if (this.clickCount >= 10) {
         await settings.set('themeSwapperEnabled', true);
         if (this.theme === 'dark') this.toggleTheme();
       }
@@ -147,7 +143,8 @@ export default {
             keysDone += event.key;
           else keysDone = '';
           if (keysDone.length == keysAll.length) {
-            this.links.push({ name: 'Debug', active: false });
+            if (!this.links.find((link) => link.name == 'Debug'))
+              this.links.push({ name: 'Debug', active: false });
             await settings.set('DeveloperMode', true);
             document.removeEventListener('keydown', listener);
           }

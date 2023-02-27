@@ -51,30 +51,37 @@ export async function checkForUpdates() {
         'Downloading update in the background. Please wait.\n\nThis may take a while depending on your internet speed. You can close this window and use the launcher, we will notify you when the update is ready.',
     });
 
-    const filename = `launcher-${release.data.index.stable.launcher}-update-temp.exe`;
-    const filePath = join(constants.SOLARTWEAKS_DIR, filename);
+    const updateReady = async () => {
+      const choice2 = await remote.dialog.showMessageBox({
+        type: 'question',
+        title: 'Update ready',
+        message: `The update is ready to be installed.`,
+        buttons: ['Cancel update', 'Install update'],
+      });
 
-    await downloadAndSaveFile(
-      `${constants.API_URL}${constants.UPDATERS.LAUNCHER.replace(
-        '{version}',
-        release.data.index.stable.launcher
-      )}`,
-      filePath,
-      'blob'
-    );
+      if (choice2.response === 1) return true;
+      else return false; // Cancel update or closed
+    };
 
-    const choice2 = await remote.dialog.showMessageBox({
-      type: 'question',
-      title: 'Update ready',
-      message: `The update is ready to be installed.`,
-      buttons: ['Cancel update', 'Install update'],
-    });
+    if (platform === 'win32') {
+      const filename = `launcher-${release.data.index.stable.launcher}-update-temp.exe`;
+      const filePath = join(constants.SOLARTWEAKS_DIR, filename);
 
-    if (choice2.response !== 1) return; // Cancel update or closed
+      await downloadAndSaveFile(
+        `${constants.API_URL}${constants.UPDATERS.LAUNCHER.replace(
+          '{version}',
+          release.data.index.stable.launcher
+        )}`,
+        filePath,
+        'blob'
+      );
 
-    execSync(filePath);
+      if (!(await updateReady())) return;
 
-    await unlink(filePath);
+      execSync(filePath);
+
+      await unlink(filePath);
+    }
 
     remote.app.quit();
   } else logger.info('Launcher up to date');

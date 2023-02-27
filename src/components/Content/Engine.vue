@@ -8,7 +8,7 @@
     <div id="options-title-container">
       <div class="options-title-section">
         <img
-          :src="`https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/8baaf723c0c991b4feaa2963c55794fffb98eaaa/${menu.module.name}.png`"
+          :src="`https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/main/${menu.module.name}.png`"
           id="options-icon"
           :alt="`${menu.module.name} Image`"
         />
@@ -65,7 +65,7 @@
     <div id="options-title-container">
       <div class="options-title-section">
         <img
-          src="https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/8baaf723c0c991b4feaa2963c55794fffb98eaaa/customCommands.png"
+          src="https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/main/customCommands.png"
           id="options-icon-custom-commands"
           alt="Command Aliases Image"
         />
@@ -141,7 +141,7 @@
     >
       <div class="customization-icon-container">
         <img
-          :src="`https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/8baaf723c0c991b4feaa2963c55794fffb98eaaa/${item.name}.png`"
+          :src="`https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/main/${item.name}.png`"
           class="customization-icon"
           :alt="`${item.name} Image`"
         />
@@ -171,7 +171,7 @@
     >
       <div class="customization-icon-container">
         <img
-          src="https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/8baaf723c0c991b4feaa2963c55794fffb98eaaa/customCommands.png"
+          src="https://raw.githubusercontent.com/Solar-Tweaks/Engine-Icons/main/customCommands.png"
           class="customization-icon"
           alt="Command Aliases Image"
         />

@@ -257,6 +257,17 @@ body[data-theme='light'] {
   }
 }
 
+@keyframes fade_down {
+  from {
+    transform: translateY(-15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 @keyframes scale_down {
   from {
     transform: scale(1.6);

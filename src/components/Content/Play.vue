@@ -2,11 +2,8 @@
   <div>
     <div
       id="play-container"
-      :style="
-        'height: ' +
-        $store.getters.getPlayContainerHeight +
-        'px;'
-      "
+      :style="'height: ' + $store.getters.getPlayContainerHeight + 'px;'"
+      @keydown="closeVersionSelection"
     >
       <div id="buttons" :class="{ disabled: $store.state.isLaunching }">
         <button
@@ -260,7 +257,7 @@ export default {
      */
 
     async closeVersionSelection(event) {
-      if (event.key === 'Escape' && this.isSelectingVersion) {
+      if (event.key === 'Escape') {
         await settings.set('version', this.selectedSubversion.id);
         await settings.set('module', this.selectedModule);
         await this.updateLaunchButton();

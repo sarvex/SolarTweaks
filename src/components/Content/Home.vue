@@ -1,6 +1,6 @@
 <template>
   <div id="home-container">
-    <div id="quick-play-container">
+    <div id="quick-play-container" v-if="starredServers.length">
       <div class="quick-play-content">
         <div class="quick-play-servers">
           <div
@@ -15,7 +15,15 @@
       </div>
     </div>
     <div id="posts-container">
-      <div v-for="post in posts" v-bind:key="post.url" class="post-container">
+      <div
+        v-for="post in posts"
+        v-bind:key="post.url"
+        class="post-container"
+        :class="{
+          'post-container-normal': starredServers.length,
+          'post-container-large': !starredServers.length,
+        }"
+      >
         <div class="post-image-container">
           <img
             :src="post.imageUrl"
@@ -26,7 +34,15 @@
             alt="Post Image"
           />
         </div>
-        <p class="post-description">{{ post.description }}</p>
+        <p
+          class="post-description"
+          :class="{
+            'post-description-normal': starredServers.length,
+            'post-description-large': !starredServers.length,
+          }"
+        >
+          {{ post.description }}
+        </p>
         <div id="post-bottom-container">
           <div class="post-author-container">
             <p class="post-author">
@@ -257,12 +273,17 @@ export default {
 }
 .post-container {
   width: 400px;
-  height: 285px;
   border-radius: 0.5rem;
   margin: 0 5px;
   background: var(--card-background);
   box-shadow: rgb(0 0 0 / 13%) 0px 1px 5px 0px;
   transition: transform 0.4s ease;
+}
+.post-container-normal {
+  height: 285px;
+}
+.post-container-large {
+  height: 355px;
 }
 .post-image-container {
   width: 400px;
@@ -288,7 +309,6 @@ export default {
   letter-spacing: 0.35px;
   line-height: 20px;
   margin: 0 5px;
-  height: 45px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -298,6 +318,12 @@ export default {
   -webkit-box-orient: vertical;
   overflow-y: scroll;
   margin-top: 5px;
+}
+.post-description-normal {
+  height: 45px;
+}
+.post-description-large {
+  height: 115px;
 }
 
 #post-bottom-container {

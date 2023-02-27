@@ -406,6 +406,10 @@ export async function checkNatives(metadata) {
     icon: 'fa-solid fa-file',
   });
 
+  await rm(join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives'))
+    .then(() => logger.log('Deleted Natives Directory'))
+    .catch(() => logger.log('Natives Directory does not Exist'));
+
   const artifact = metadata.launchTypeData.artifacts.find(
     (artifact) => artifact.type === 'NATIVES'
   );
@@ -414,26 +418,18 @@ export async function checkNatives(metadata) {
       join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name)
     )
   ) {
-    if (
-      !existsSync(
-        join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives')
-      )
-    ) {
-      await extractZip(
-        join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name),
-        {
-          dir: join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives'),
-        }
-      )
-        .then(() => {
-          logger.debug('Extracted natives');
-        })
-        .catch((error) => {
-          logger.throw('Failed to extract natives', error);
-        });
-    } else {
-      logger.debug('Natives already extracted');
-    }
+    await extractZip(
+      join(constants.DOTLUNARCLIENT, 'offline', 'multiver', artifact.name),
+      {
+        dir: join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives'),
+      }
+    )
+      .then(() => {
+        logger.debug('Extracted natives');
+      })
+      .catch((error) => {
+        logger.throw('Failed to extract natives', error);
+      });
   } else {
     logger.error('Natives not found, this should not happen');
   }
@@ -763,19 +759,15 @@ export async function checkAndLaunch(serverIp = null) {
   store.commit('setLaunching', true);
   updateActivity('In the launcher', 'Launching game');
 
+  const version = await settings.get('version');
+  const skipChecks = await settings.get('skipChecks');
+
   let success = true;
 
   function error(action, err) {
-    console.error(action, err);
-    store.commit('setLaunchingState', {
-      title: `LAUNCH ${version}`,
-      message: 'READY TO LAUNCH',
-      icon: 'fa-solid fa-gamepad',
-    });
-    store.commit('setLaunching', false);
+    success = false;
     store.commit('setErrorMessage', `${action} Error: ` + (err.stack ?? err));
     store.commit('setErrorModal', true);
-    success = false;
     logger.throw(`Failed to ${action}`, err);
   }
 
@@ -786,7 +778,7 @@ export async function checkAndLaunch(serverIp = null) {
 
   if (!metadata) return logger.error('No Metadata for Launch');
 
-  if (!(await settings.get('skipChecks'))) {
+  if (!skipChecks) {
     // Check JRE
     if (!(await checkJRE(metadata).catch((err) => error('Check JRE', err))))
       return;
@@ -819,7 +811,15 @@ export async function checkAndLaunch(serverIp = null) {
     await checkEngine().catch((err) => error('Check Engine', err));
   }
 
-  if (!success) return;
+  if (!success) {
+    remote.getCurrentWindow().setProgressBar(-1);
+    store.commit('setLaunching', false);
+    return store.commit('setLaunchingState', {
+      title: `LAUNCH ${version}`,
+      message: 'READY TO LAUNCH',
+      icon: 'fa-solid fa-gamepad',
+    });
+  }
 
   // Launch game
   await launchGame(metadata, serverIp, await settings.get('debugMode')).catch(
@@ -827,7 +827,6 @@ export async function checkAndLaunch(serverIp = null) {
   );
 
   // Trackers
-  const version = await settings.get('version');
   await axios
     .post(`${constants.API_URL}${constants.ENDPOINTS.LAUNCH}`, {
       item: 'launcher',
