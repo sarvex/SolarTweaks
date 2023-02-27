@@ -407,8 +407,8 @@ export async function checkNatives(metadata) {
   });
 
   await rm(join(constants.DOTLUNARCLIENT, 'offline', 'multiver', 'natives'))
-    .then(() => logger.log('Deleted Natives Directory'))
-    .catch(() => logger.log('Natives Directory does not Exist'));
+    .then(() => logger.info('Deleted Natives Directory'))
+    .catch(() => logger.info('Natives Directory does not Exist'));
 
   const artifact = metadata.launchTypeData.artifacts.find(
     (artifact) => artifact.type === 'NATIVES'

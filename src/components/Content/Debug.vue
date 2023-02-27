@@ -70,7 +70,7 @@ export default {
       if (value !== undefined) data[name] = value;
       else delete data[name];
       await writeFile(this.settingsFile, JSON.stringify(data), 'utf-8');
-      logger.log(`Deleted "${name}" Property of Settings`);
+      logger.info(`Deleted "${name}" Property of Settings`);
     },
   },
 };
