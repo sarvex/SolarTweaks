@@ -18,6 +18,7 @@ import { checkHash, downloadAndSaveFile } from './downloader';
 import { verifyEngine } from './engine';
 import Logger, { createMinecraftLogger } from './logger';
 import { getDefaultJREPath, getDotMinecraftDirectory } from './settings';
+import { availableVersions } from '../components/Content/Play.vue';
 
 const logger = new Logger('launcher');
 
@@ -559,7 +560,9 @@ export async function getJavaArguments(
     '--accessToken',
     '0',
     '--assetIndex',
-    version === '1.7.10' ? '1.7.10' : version === '1.19.3' ? '2' : version.split('.').splice(0, 2).join('.'),
+    availableVersions
+      .find((i) => i.id == version.split('.').slice(0, 2).join('.'))
+      .subversions.find((i) => i.id == version).assets.id,
     '--userProperties',
     '{}',
     '--gameDir',

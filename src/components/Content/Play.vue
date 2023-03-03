@@ -208,6 +208,8 @@ import { cache } from '../../main';
 
 const logger = new Logger('play');
 
+export let availableVersions = [];
+
 export default {
   name: 'Play',
   data: () => ({
@@ -389,6 +391,13 @@ export default {
     }, 150);
   },
   async beforeMount() {
+    this.$watch(
+      () => this.availableVersions,
+      () => {
+        availableVersions = this.availableVersions;
+        console.log(availableVersions);
+      }
+    );
     let data;
     if (cache.has('lc_launcher_metadata'))
       data = cache.get('lc_launcher_metadata');
