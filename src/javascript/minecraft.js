@@ -369,7 +369,7 @@ export async function checkGameFiles(metadata) {
     );
     logger.debug(
       `Checking game file ${parseInt(index) + 1}/${
-        metadata.launchTypeData.artifacts.length
+      metadata.launchTypeData.artifacts.length
       }`
     );
 
@@ -680,6 +680,12 @@ export async function launchGame(metadata, serverIp = null, debug = false) {
     cwd: join(constants.DOTLUNARCLIENT, 'offline', 'multiver'),
     detached: true,
     shell: debug,
+    env: {
+      ...process.env,
+      "_JAVA_OPTIONS": "",
+      "JAVA_TOOL_OPTIONS": "",
+      "JDK_JAVA_OPTIONS": "",
+    }
   });
 
   proc.on('error', (error) => {
